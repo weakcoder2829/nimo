@@ -1,0 +1,14 @@
+# Secrets - NEVER UPLOAD
+.env
+.env.local
+.env.*.local
+
+# Build & Heavy folders
+.next/
+node_modules/
+out/
+.vercel/
+tsconfig.tsbuildinfo
+
+# OS
+.DS_Store
