@@ -1,20 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Post, PostComment } from "@/lib/mockData";
 import {
+  Heart,
+  MessageCircle,
+  Send as PaperPlane,
+  Bookmark,
+  MoreHorizontal,
   ArrowBigUp,
   ArrowBigDown,
-  MessageCircle,
-  Repeat2,
-  Heart,
-  Share2,
-  Bookmark,
-  Flame,
+  Sparkles,
   Check,
   MapPin,
-  Send,
-  MoreHorizontal,
   CheckCircle2,
 } from "lucide-react";
 
@@ -27,14 +25,14 @@ export default function PostCard({ post, onUpvote }: PostCardProps) {
   const [votes, setVotes] = useState(post.upvotes);
   const [userVote, setUserVote] = useState<"up" | "down" | null>(null);
   const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likesCount || 0);
-  const [reposted, setReposted] = useState(false);
-  const [repostsCount, setRepostsCount] = useState(post.repostsCount || 0);
+  const [likesCount, setLikesCount] = useState(post.likesCount || 124);
+  const [showHeartPop, setShowHeartPop] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<PostComment[]>(post.comments || []);
-  const [commentInput, setCommentInput] = useState("");
+  const [commentText, setCommentText] = useState("");
   const [copied, setCopied] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const lastTapRef = useRef<number>(0);
 
   const handleVote = (type: "up" | "down") => {
     if (userVote === type) {
@@ -56,34 +54,40 @@ export default function PostCard({ post, onUpvote }: PostCardProps) {
     } else {
       setLiked(true);
       setLikesCount((prev) => prev + 1);
+      setShowHeartPop(true);
+      setTimeout(() => setShowHeartPop(false), 800);
     }
   };
 
-  const handleRepost = () => {
-    if (reposted) {
-      setReposted(false);
-      setRepostsCount((prev) => Math.max(0, prev - 1));
-    } else {
-      setReposted(true);
-      setRepostsCount((prev) => prev + 1);
+  // Double tap to like (Instagram gesture)
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      if (!liked) {
+        setLiked(true);
+        setLikesCount((prev) => prev + 1);
+      }
+      setShowHeartPop(true);
+      setTimeout(() => setShowHeartPop(false), 800);
     }
+    lastTapRef.current = now;
   };
 
   const handleAddComment = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!commentInput.trim()) return;
+    if (!commentText.trim()) return;
 
-    const newComment: PostComment = {
+    const newC: PostComment = {
       id: `c_${Date.now()}`,
-      author: "You (Anonymous)",
+      author: "you.anon",
       avatar: "🦊",
-      text: commentInput.trim(),
+      text: commentText.trim(),
       timeAgo: "Just now",
       upvotes: 1,
     };
 
-    setComments((prev) => [newComment, ...prev]);
-    setCommentInput("");
+    setComments((prev) => [...prev, newC]);
+    setCommentText("");
   };
 
   const handleShare = () => {
@@ -94,217 +98,283 @@ export default function PostCard({ post, onUpvote }: PostCardProps) {
     }
   };
 
+  const quickEmojis = ["❤️", "🔥", "😂", "🙌", "💀", "👏"];
+
   return (
-    <article className="clay-card p-5 sm:p-6 transition-all duration-300">
-      {/* 1. Header: Avatar with story ring + Author handle & meta */}
-      <div className="flex items-start justify-between gap-3">
+    <article className="clay-card overflow-hidden transition-all duration-300">
+      {/* 1. INSTAGRAM POST HEADER */}
+      <div className="p-3.5 sm:p-4 flex items-center justify-between border-b border-border/40">
         <div className="flex items-center gap-3">
-          {/* Tactile Clay Avatar with gradient ring */}
-          <div className="relative">
-            <div className="clay-avatar w-12 h-12 text-2xl shrink-0 ring-2 ring-primary/30">
-              <span>{post.authorAvatar}</span>
+          {/* Instagram Story Gradient Ring around Avatar */}
+          <div className="ig-story-ring">
+            <div className="ig-story-avatar-inner">
+              <div className="clay-avatar w-9 h-9 text-lg">
+                {post.authorAvatar}
+              </div>
             </div>
-            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-card" />
           </div>
 
           <div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-heading font-black text-sm text-foreground hover:text-primary transition-colors cursor-pointer">
-                {post.author}
-              </span>
-              <CheckCircle2 className="w-3.5 h-3.5 text-primary fill-primary/10 shrink-0" />
-              <span className="text-xs text-muted-foreground font-heading">
+            <div className="flex items-center gap-1.5">
+              <span className="font-heading font-black text-xs sm:text-sm text-foreground hover:underline cursor-pointer">
                 {post.handle}
               </span>
-
-              {post.isHot && (
-                <span className="clay-badge clay-badge-hot ml-1">
-                  <Flame className="w-3 h-3 fill-current" />
-                  <span>Hot</span>
-                </span>
-              )}
+              <CheckCircle2 className="w-3.5 h-3.5 text-primary fill-primary/10 shrink-0" />
+              <span className="text-[11px] text-muted-foreground font-heading">
+                &bull; {post.timeAgo}
+              </span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-heading mt-0.5">
-              <span>{post.college}</span>
-              <span>&bull;</span>
-              <span>{post.department}</span>
-              <span>&bull;</span>
-              <span>{post.timeAgo}</span>
+            <div className="text-[11px] text-muted-foreground font-heading flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+              <span className="truncate max-w-[200px]">{post.college}</span>
             </div>
           </div>
         </div>
 
-        {/* Top actions: Save & options */}
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-            onClick={() => setSaved(!saved)}
-            title={saved ? "Saved" : "Save post"}
-          >
-            <Bookmark className={`w-4 h-4 ${saved ? "fill-primary text-primary" : ""}`} />
-          </button>
-        </div>
+        <button
+          type="button"
+          className="p-1.5 text-muted-foreground hover:text-foreground rounded-full"
+          title="More options"
+        >
+          <MoreHorizontal className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* 2. Main Post Content */}
-      <p className="mt-3.5 text-base sm:text-[17px] text-foreground/90 leading-relaxed font-body font-normal">
-        {post.content}
-      </p>
+      {/* 2. INSTAGRAM VISUAL CONFESSION CANVAS (Double-tap to like) */}
+      <div
+        onClick={handleDoubleTap}
+        className={`relative aspect-[4/3] sm:aspect-[16/10] bg-gradient-to-br ${
+          post.gradientBg || "from-blue-600 via-indigo-600 to-purple-800"
+        } p-6 sm:p-8 flex flex-col justify-between text-white select-none cursor-pointer overflow-hidden shadow-inner`}
+      >
+        {/* Subtle decorative mesh overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-15"
+          style={{
+            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+        />
 
-      {/* Topic Tag if present */}
-      {post.tag && (
-        <div className="mt-3">
-          <span className="clay-badge text-primary bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors cursor-pointer text-xs font-heading font-bold">
-            {post.tag}
-          </span>
-        </div>
-      )}
-
-      {/* 3. Social Media Engagement Bar */}
-      <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between gap-2 flex-wrap">
-        {/* Left: Tactile Clay Vote Pill */}
-        <div className="clay-vote-container">
-          <button
-            type="button"
-            aria-label="Upvote"
-            onClick={() => handleVote("up")}
-            className={`clay-vote-btn ${userVote === "up" ? "active-up" : ""}`}
-          >
-            <ArrowBigUp className={`w-5 h-5 ${userVote === "up" ? "fill-current" : ""}`} />
-          </button>
-
-          <span
-            className={`px-2 text-xs font-heading font-black min-w-[28px] text-center ${
-              userVote === "up"
-                ? "text-primary"
-                : userVote === "down"
-                ? "text-destructive"
-                : "text-foreground"
-            }`}
-          >
-            {votes}
+        {/* Top bar on canvas: Anonymous badge & category */}
+        <div className="relative z-10 flex items-center justify-between text-xs font-heading">
+          <span className="px-2.5 py-1 rounded-full bg-black/30 backdrop-blur-md border border-white/20 text-white font-bold flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Anonymous Yak</span>
           </span>
 
-          <button
-            type="button"
-            aria-label="Downvote"
-            onClick={() => handleVote("down")}
-            className={`clay-vote-btn ${userVote === "down" ? "active-down" : ""}`}
-          >
-            <ArrowBigDown className={`w-5 h-5 ${userVote === "down" ? "fill-current" : ""}`} />
-          </button>
+          {post.tag && (
+            <span className="px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md font-bold">
+              {post.tag}
+            </span>
+          )}
         </div>
 
-        {/* Right: Comments, Repost, Like & Share buttons */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {/* Comments Toggle */}
-          <button
-            type="button"
-            onClick={() => setShowComments(!showComments)}
-            className={`clay-badge text-xs font-heading font-semibold py-1.5 px-3 cursor-pointer transition-colors ${
-              showComments ? "bg-primary/10 text-primary border-primary/30" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>{comments.length}</span>
-          </button>
-
-          {/* Repost / Echo */}
-          <button
-            type="button"
-            onClick={handleRepost}
-            className={`clay-badge text-xs font-heading font-semibold py-1.5 px-3 cursor-pointer transition-colors ${
-              reposted ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/30" : "text-muted-foreground hover:text-foreground"
-            }`}
-            title="Echo to campus radar"
-          >
-            <Repeat2 className="w-4 h-4" />
-            <span>{repostsCount}</span>
-          </button>
-
-          {/* Like / Heart */}
-          <button
-            type="button"
-            onClick={handleLike}
-            className={`clay-badge text-xs font-heading font-semibold py-1.5 px-3 cursor-pointer transition-colors ${
-              liked ? "text-rose-500 bg-rose-500/10 border-rose-500/30" : "text-muted-foreground hover:text-foreground"
-            }`}
-            title="Like yak"
-          >
-            <Heart className={`w-4 h-4 ${liked ? "fill-current" : ""}`} />
-            <span>{likesCount}</span>
-          </button>
-
-          {/* Share */}
-          <button
-            type="button"
-            onClick={handleShare}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-            title="Copy share link"
-          >
-            {copied ? (
-              <Check className="w-4 h-4 text-emerald-500 animate-in zoom-in" />
-            ) : (
-              <Share2 className="w-4 h-4" />
-            )}
-          </button>
+        {/* Centered Quote / Confession Content */}
+        <div className="relative z-10 py-4 text-center max-w-lg mx-auto space-y-3">
+          <span className="text-3xl sm:text-4xl font-serif text-white/50 block leading-none">“</span>
+          <p className="font-heading font-bold text-lg sm:text-xl md:text-2xl text-white leading-snug drop-shadow-sm px-2">
+            {post.content}
+          </p>
+          <span className="text-3xl sm:text-4xl font-serif text-white/50 block leading-none">”</span>
         </div>
+
+        {/* Bottom watermark */}
+        <div className="relative z-10 flex items-center justify-between text-[11px] font-heading text-white/70">
+          <span>{post.department}</span>
+          <span className="font-black tracking-widest text-white/90">nimo.</span>
+        </div>
+
+        {/* Floating Heart Pop Animation on Double-Tap */}
+        {showHeartPop && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none animate-heart-pop">
+            <Heart className="w-24 h-24 text-white fill-white drop-shadow-2xl" />
+          </div>
+        )}
       </div>
 
-      {/* 4. Expandable Inline Social Comments Thread */}
-      {showComments && (
-        <div className="mt-4 pt-3 border-t border-border/40 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Quick Comment Input Box */}
-          <form onSubmit={handleAddComment} className="flex items-center gap-2">
-            <input
-              type="text"
-              placeholder="Drop an anonymous reply..."
-              value={commentInput}
-              onChange={(e) => setCommentInput(e.target.value)}
-              className="flex-1 h-9 px-3.5 rounded-full text-xs bg-muted/50 border border-border/70 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary"
-            />
+      {/* 3. INSTAGRAM ACTION BAR */}
+      <div className="p-3 sm:p-4 space-y-2.5">
+        <div className="flex items-center justify-between">
+          {/* Left: Like, Comment, Share */}
+          <div className="flex items-center gap-4">
             <button
-              type="submit"
-              disabled={!commentInput.trim()}
-              className="clay-button-primary h-9 px-3.5 rounded-full text-xs font-bold disabled:opacity-40"
+              type="button"
+              onClick={handleLike}
+              className="transition-transform active:scale-125 focus:outline-none"
+              title="Like"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Heart
+                className={`w-6 h-6 transition-colors ${
+                  liked
+                    ? "text-[#ed4956] fill-[#ed4956]"
+                    : "text-foreground hover:text-muted-foreground"
+                }`}
+              />
             </button>
-          </form>
 
-          {/* Comments List */}
-          {comments.length > 0 ? (
-            <div className="space-y-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setShowComments(!showComments)}
+              className="text-foreground hover:text-muted-foreground transition-transform active:scale-125 focus:outline-none"
+              title="Comment"
+            >
+              <MessageCircle className="w-6 h-6 -scale-x-100" />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleShare}
+              className="text-foreground hover:text-muted-foreground transition-transform active:scale-125 focus:outline-none"
+              title="Share"
+            >
+              {copied ? (
+                <Check className="w-5 h-5 text-emerald-500" />
+              ) : (
+                <PaperPlane className="w-5 h-5 -rotate-45" />
+              )}
+            </button>
+          </div>
+
+          {/* Right: Tactile Clay Vote Pill & Save */}
+          <div className="flex items-center gap-3">
+            {/* Clay Vote Capsule */}
+            <div className="clay-vote-container">
+              <button
+                type="button"
+                onClick={() => handleVote("up")}
+                className={`clay-vote-btn ${userVote === "up" ? "active-up" : ""}`}
+                aria-label="Upvote"
+              >
+                <ArrowBigUp className={`w-4 h-4 ${userVote === "up" ? "fill-current" : ""}`} />
+              </button>
+
+              <span
+                className={`px-1.5 text-xs font-heading font-black min-w-[24px] text-center ${
+                  userVote === "up"
+                    ? "text-primary"
+                    : userVote === "down"
+                    ? "text-destructive"
+                    : "text-foreground"
+                }`}
+              >
+                {votes}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => handleVote("down")}
+                className={`clay-vote-btn ${userVote === "down" ? "active-down" : ""}`}
+                aria-label="Downvote"
+              >
+                <ArrowBigDown className={`w-4 h-4 ${userVote === "down" ? "fill-current" : ""}`} />
+              </button>
+            </div>
+
+            {/* Bookmark */}
+            <button
+              type="button"
+              onClick={() => setSaved(!saved)}
+              className="focus:outline-none"
+              title="Save"
+            >
+              <Bookmark
+                className={`w-6 h-6 transition-colors ${
+                  saved ? "text-foreground fill-foreground" : "text-foreground hover:text-muted-foreground"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* 4. INSTAGRAM SOCIAL PROOF & CAPTION */}
+        <div className="space-y-1 text-xs sm:text-sm font-heading">
+          {/* Liked by row */}
+          <div className="font-bold text-foreground">
+            Liked by <span className="hover:underline cursor-pointer">{post.likedBy || "mukul_cse"}</span> and{" "}
+            <span>{likesCount.toLocaleString()} others</span>
+          </div>
+
+          {/* Caption */}
+          <div className="leading-snug">
+            <span className="font-black text-foreground mr-1.5 hover:underline cursor-pointer">
+              {post.handle}
+            </span>
+            <span className="font-normal text-foreground/90 font-body">
+              {post.content}
+            </span>
+          </div>
+
+          {/* View comments toggle */}
+          {comments.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowComments(!showComments)}
+              className="text-xs text-muted-foreground hover:text-foreground pt-0.5 block"
+            >
+              {showComments
+                ? "Hide comments"
+                : `View all ${comments.length} comments`}
+            </button>
+          )}
+
+          {/* Expanded Comments List */}
+          {showComments && (
+            <div className="space-y-1.5 pt-2 border-t border-border/40">
               {comments.map((c) => (
-                <div key={c.id} className="p-3 rounded-2xl bg-muted/30 border border-border/30 flex items-start gap-2.5">
-                  <div className="clay-avatar w-7 h-7 text-xs shrink-0 mt-0.5">
-                    {c.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-heading font-bold text-xs text-foreground">
-                        {c.author}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground font-heading">
-                        {c.timeAgo}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-foreground/90 font-body mt-0.5">
-                      {c.text}
-                    </p>
-                  </div>
+                <div key={c.id} className="text-xs leading-relaxed flex items-start gap-1.5">
+                  <span className="font-bold text-foreground shrink-0">
+                    {c.author}
+                  </span>
+                  <span className="font-body text-foreground/90">{c.text}</span>
+                  <span className="text-[10px] text-muted-foreground ml-auto shrink-0">
+                    {c.timeAgo}
+                  </span>
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="text-xs text-muted-foreground font-heading italic text-center py-2">
-              No replies yet. Be the first to drop an anonymous reply!
-            </p>
           )}
+
+          {/* Quick Emoji Reaction Pill Bar */}
+          <div className="flex items-center gap-1.5 pt-1 overflow-x-auto pb-0.5 scrollbar-none">
+            {quickEmojis.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => setCommentText((prev) => prev + emoji)}
+                className="w-7 h-7 rounded-full bg-muted/40 hover:bg-muted text-sm flex items-center justify-center transition-transform active:scale-125"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+
+          {/* Inline Add Comment Input */}
+          <form onSubmit={handleAddComment} className="flex items-center gap-2 pt-1 border-t border-border/30">
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              className="flex-1 bg-transparent text-xs font-body outline-none placeholder:text-muted-foreground/60 py-1"
+            />
+            {commentText.trim() && (
+              <button
+                type="submit"
+                className="text-xs font-bold text-primary hover:text-primary/80 font-heading"
+              >
+                Post
+              </button>
+            )}
+          </form>
+
+          {/* Timestamp */}
+          <div className="text-[10px] text-muted-foreground uppercase tracking-wider pt-0.5">
+            {post.timeAgo}
+          </div>
         </div>
-      )}
+      </div>
     </article>
   );
 }

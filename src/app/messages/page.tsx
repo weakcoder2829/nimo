@@ -2,21 +2,25 @@
 
 import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import { INITIAL_CHATS, ChatThread } from "@/lib/mockData";
+import { INITIAL_CHATS, CAMPUS_STORIES, ChatThread } from "@/lib/mockData";
 import {
-  Search,
-  Send,
+  Send as PaperPlane,
+  Heart,
   ArrowLeft,
-  ShieldCheck,
+  Search,
   CheckCheck,
   Smile,
+  Edit,
+  Phone,
+  Video,
+  Info,
 } from "lucide-react";
 
 export default function MessagesPage() {
   const [chats, setChats] = useState<ChatThread[]>(INITIAL_CHATS);
   const [selectedChatId, setSelectedChatId] = useState<string>("c1");
-  const [searchQuery, setSearchQuery] = useState("");
   const [inputText, setInputText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const activeChat = chats.find((c) => c.id === selectedChatId) || chats[0];
 
@@ -47,46 +51,92 @@ export default function MessagesPage() {
     setInputText("");
   };
 
+  const handleSendHeart = () => {
+    const newMsg = {
+      id: "m_" + Date.now(),
+      sender: "me" as const,
+      text: "❤️",
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+
+    setChats((prev) =>
+      prev.map((c) =>
+        c.id === activeChat.id
+          ? {
+              ...c,
+              lastMessage: "❤️",
+              time: "Just now",
+              messages: [...c.messages, newMsg],
+            }
+          : c
+      )
+    );
+  };
+
   const filteredChats = chats.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <AppLayout activeCollege="Aggarwal Clg">
-      <div className="h-[calc(100vh-65px)] md:h-[calc(100vh-40px)] max-w-6xl mx-auto p-2 sm:p-4">
-        {/* Main 2-Column Glassmorphic Container */}
-        <div className="h-full rounded-3xl glass-card border border-border/80 shadow-xl overflow-hidden flex flex-col md:flex-row">
-          {/* LEFT COLUMN: Chat List */}
+      <div className="h-[calc(100vh-65px)] md:h-[calc(100vh-40px)] max-w-5xl mx-auto p-2 sm:p-4">
+        {/* Main Instagram Direct Split Window */}
+        <div className="h-full rounded-3xl glass-card border border-border/80 shadow-2xl overflow-hidden flex flex-col md:flex-row">
+          {/* ================================================================= */}
+          {/* LEFT COLUMN: Instagram Direct Thread List                         */}
+          {/* ================================================================= */}
           <div
             className={`w-full md:w-80 lg:w-96 border-r border-border/60 flex flex-col shrink-0 ${
               selectedChatId ? "hidden md:flex" : "flex"
             }`}
           >
-            {/* Header & Search */}
-            <div className="p-4 border-b border-border/60 space-y-3">
-              <div className="flex items-center justify-between">
-                <h1 className="font-heading font-black text-xl text-foreground">
-                  Campus Whispers
-                </h1>
-                <span className="clay-badge text-[10px] font-heading font-bold text-emerald-600 dark:text-emerald-400 gap-1">
-                  <ShieldCheck className="w-3 h-3" />
-                  E2E Encrypted
-                </span>
-              </div>
+            {/* Header: User Handle + New Message Button */}
+            <div className="p-4 border-b border-border/60 flex items-center justify-between">
+              <span className="font-heading font-black text-base text-foreground">
+                mukul_cse
+              </span>
+              <button
+                type="button"
+                className="text-foreground hover:text-muted-foreground p-1"
+                title="New message"
+              >
+                <Edit className="w-5 h-5" />
+              </button>
+            </div>
 
+            {/* Stories / Active Radar Bubbles */}
+            <div className="p-3 border-b border-border/40 overflow-x-auto flex items-center gap-3 scrollbar-none">
+              {CAMPUS_STORIES.slice(0, 5).map((s) => (
+                <div key={s.id} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer">
+                  <div className="ig-story-ring p-0.5">
+                    <div className="ig-story-avatar-inner">
+                      <div className="clay-avatar w-11 h-11 text-lg">
+                        {s.avatar}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-heading font-medium text-foreground max-w-[55px] truncate">
+                    {s.title}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Search Input */}
+            <div className="p-3 border-b border-border/40">
               <div className="relative">
-                <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
-                  placeholder="Search chats or students..."
+                  placeholder="Search direct whispers..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 h-9 rounded-xl bg-muted/40 border border-border/60 text-xs font-heading focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full pl-8 pr-3 h-8 rounded-lg bg-muted/50 border-none text-xs font-heading outline-none"
                 />
               </div>
             </div>
 
-            {/* Chats Scroll List */}
-            <div className="flex-1 overflow-y-auto divide-y divide-border/30">
+            {/* Direct Threads Scroll List */}
+            <div className="flex-1 overflow-y-auto divide-y divide-border/20">
               {filteredChats.map((chat) => {
                 const isSelected = chat.id === selectedChatId;
                 return (
@@ -95,25 +145,25 @@ export default function MessagesPage() {
                     onClick={() => setSelectedChatId(chat.id)}
                     className={`p-3.5 flex items-center gap-3 cursor-pointer transition-colors ${
                       isSelected
-                        ? "bg-primary/10 border-l-4 border-l-primary"
+                        ? "bg-black/5 dark:bg-white/10"
                         : "hover:bg-muted/40"
                     }`}
                   >
                     <div className="relative shrink-0">
-                      <div className="clay-avatar w-11 h-11 text-xl">
+                      <div className="clay-avatar w-12 h-12 text-2xl">
                         {chat.avatar}
                       </div>
                       {chat.online && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-card" />
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-card" />
                       )}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <span className="font-heading font-bold text-sm text-foreground truncate">
+                        <span className="font-heading font-bold text-xs text-foreground truncate">
                           {chat.name}
                         </span>
-                        <span className="text-[10px] text-muted-foreground font-heading shrink-0">
+                        <span className="text-[10px] text-muted-foreground font-heading">
                           {chat.time}
                         </span>
                       </div>
@@ -123,9 +173,7 @@ export default function MessagesPage() {
                     </div>
 
                     {chat.unreadCount && (
-                      <span className="clay-button-primary text-[10px] font-heading font-bold h-5 min-w-[20px] rounded-full px-1.5 shrink-0">
-                        {chat.unreadCount}
-                      </span>
+                      <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
                     )}
                   </div>
                 );
@@ -133,18 +181,20 @@ export default function MessagesPage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Active Chat Conversation Window */}
+          {/* ================================================================= */}
+          {/* RIGHT COLUMN: Instagram Direct Active Chat Window                 */}
+          {/* ================================================================= */}
           <div
             className={`flex-1 flex flex-col h-full ${
               !selectedChatId ? "hidden md:flex" : "flex"
             }`}
           >
-            {/* Conversation Header */}
-            <div className="p-3.5 sm:p-4 border-b border-border/60 glass-nav-header flex items-center justify-between shrink-0">
+            {/* Direct Chat Top Bar */}
+            <div className="p-3 sm:p-4 border-b border-border/60 glass-nav-header flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="md:hidden p-1.5 text-muted-foreground hover:text-foreground"
+                  className="md:hidden p-1 text-muted-foreground hover:text-foreground"
                   onClick={() => setSelectedChatId("")}
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -155,12 +205,12 @@ export default function MessagesPage() {
                     {activeChat.avatar}
                   </div>
                   {activeChat.online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-card" />
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-card" />
                   )}
                 </div>
 
                 <div>
-                  <h3 className="font-heading font-bold text-sm text-foreground">
+                  <h3 className="font-heading font-bold text-xs sm:text-sm text-foreground">
                     {activeChat.name}
                   </h3>
                   <div className="text-[11px] text-muted-foreground font-heading flex items-center gap-1.5">
@@ -172,9 +222,15 @@ export default function MessagesPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="flex items-center gap-3 text-foreground">
+                <Phone className="w-5 h-5 cursor-pointer hover:text-primary transition-colors" />
+                <Video className="w-5 h-5 cursor-pointer hover:text-primary transition-colors" />
+                <Info className="w-5 h-5 cursor-pointer hover:text-primary transition-colors" />
+              </div>
             </div>
 
-            {/* Messages Stream */}
+            {/* Direct Messages Stream */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {activeChat.messages.map((msg) => {
                 const isMe = msg.sender === "me";
@@ -189,20 +245,20 @@ export default function MessagesPage() {
                       </div>
                     )}
                     <div
-                      className={`max-w-[78%] sm:max-w-md px-4 py-2.5 rounded-2xl text-sm font-body ${
+                      className={`max-w-[78%] sm:max-w-md px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-body ${
                         isMe
-                          ? "clay-button-primary text-white rounded-br-none"
-                          : "clay-card text-foreground rounded-bl-none border border-border/60"
+                          ? "bg-primary text-white rounded-br-xs shadow-xs"
+                          : "bg-muted/70 text-foreground rounded-bl-xs border border-border/50"
                       }`}
                     >
                       <p className="leading-relaxed">{msg.text}</p>
                       <div
-                        className={`flex items-center justify-end gap-1 text-[10px] mt-1 font-heading ${
+                        className={`flex items-center justify-end gap-1 text-[9px] mt-1 font-heading ${
                           isMe ? "text-blue-100" : "text-muted-foreground"
                         }`}
                       >
                         <span>{msg.time}</span>
-                        {isMe && <CheckCheck className="w-3.5 h-3.5" />}
+                        {isMe && <CheckCheck className="w-3 h-3" />}
                       </div>
                     </div>
                   </div>
@@ -210,22 +266,40 @@ export default function MessagesPage() {
               })}
             </div>
 
-            {/* Input Bar */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-border/60 flex items-center gap-2">
+            {/* Instagram Direct Message Input Bar */}
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-border/60 flex items-center gap-2.5">
+              <button
+                type="button"
+                className="text-foreground hover:text-muted-foreground p-1"
+              >
+                <Smile className="w-5 h-5" />
+              </button>
+
               <input
                 type="text"
-                placeholder={`Whisper to ${activeChat.name}...`}
+                placeholder={`Message ${activeChat.name}...`}
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                className="flex-1 h-10 px-4 rounded-full bg-muted/50 border border-border/80 text-xs font-body focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+                className="flex-1 h-10 px-4 rounded-full bg-muted/50 border border-border/70 text-xs font-body focus:outline-none focus:border-primary text-foreground"
               />
-              <button
-                type="submit"
-                disabled={!inputText.trim()}
-                className="clay-button-primary w-10 h-10 rounded-full flex items-center justify-center p-0 disabled:opacity-40"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+
+              {inputText.trim() ? (
+                <button
+                  type="submit"
+                  className="font-heading font-black text-xs text-primary hover:text-primary/80 px-2"
+                >
+                  Send
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSendHeart}
+                  className="text-foreground hover:text-[#ed4956] transition-colors p-1"
+                  title="Send heart"
+                >
+                  <Heart className="w-6 h-6 hover:fill-[#ed4956] hover:text-[#ed4956]" />
+                </button>
+              )}
             </form>
           </div>
         </div>
