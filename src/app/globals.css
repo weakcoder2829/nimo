@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *), @media (prefers-color-scheme: dark));
 
 @theme inline {
   --color-background: var(--background);
@@ -147,6 +147,60 @@
     inset 2px 2px 5px rgba(0, 0, 0, 0.6),
     inset -2px -2px 4px rgba(255, 255, 255, 0.08);
 }
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --background: #000000;
+    --foreground: #f4f4f5;
+
+    --card: #121212;
+    --card-foreground: #f4f4f5;
+
+    --popover: #121212;
+    --popover-foreground: #f4f4f5;
+
+    --primary: #0095f6;
+    --primary-foreground: #ffffff;
+
+    --secondary: #1e1e1e;
+    --secondary-foreground: #f4f4f5;
+
+    --muted: #1c1c1e;
+    --muted-foreground: #a1a1aa;
+
+    --accent: #172554;
+    --accent-foreground: #bfdbfe;
+
+    --destructive: #ff3040;
+    --border: #262626;
+    --input: #262626;
+    --ring: #0095f6;
+
+    /* Glassmorphism Design Tokens (Dark) */
+    --glass-bg: rgba(18, 18, 18, 0.78);
+    --glass-bg-subtle: rgba(18, 18, 18, 0.55);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-subtle: rgba(255, 255, 255, 0.05);
+    --glass-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.65), 0 8px 16px -4px rgba(0, 0, 0, 0.5);
+
+    /* Claymorphism Design Tokens (Dark) */
+    --clay-bg: #141416;
+    --clay-card-shadow:
+      0 16px 32px -6px rgba(0, 0, 0, 0.65),
+      0 8px 16px -4px rgba(0, 0, 0, 0.45),
+      inset 2px 2px 5px rgba(255, 255, 255, 0.1),
+      inset -3px -3px 7px rgba(0, 0, 0, 0.7);
+    --clay-card-hover:
+      0 22px 42px -6px rgba(0, 0, 0, 0.75),
+      0 10px 20px -4px rgba(0, 0, 0, 0.55),
+      inset 2px 2px 5px rgba(255, 255, 255, 0.14),
+      inset -3px -3px 7px rgba(0, 0, 0, 0.75);
+    --clay-inner-shadow:
+      inset 2px 2px 5px rgba(0, 0, 0, 0.6),
+      inset -2px -2px 4px rgba(255, 255, 255, 0.08);
+  }
+}
+
 
 @layer base {
   * {

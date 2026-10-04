@@ -17,10 +17,10 @@
   align-items: center;
   justify-content: flex-start;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #ffffff;
+  color: var(--foreground);
   overflow-x: hidden;
   box-sizing: border-box;
-  background: #080c14;
+  background: var(--background);
 }
 
 /* ==================== AMBIENT GLOW & ORBS ==================== */
@@ -903,3 +903,62 @@
     font-size: 1.45rem;
   }
 }
+
+/* ==================== SYSTEM LIGHT THEME OVERRIDES ==================== */
+@media (prefers-color-scheme: light) {
+  :global(:root:not(.dark)) .pageContainer {
+    color: #18181b;
+    background: #fafafa;
+  }
+  :global(:root:not(.dark)) .ambientGridPattern {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  }
+  :global(:root:not(.dark)) .glassCard {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(228, 228, 231, 0.9);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+  :global(:root:not(.dark)) .titlePrimary {
+    color: #09090b;
+    text-shadow: none;
+  }
+  :global(:root:not(.dark)) .subtitleMuted {
+    color: #71717a;
+  }
+  :global(:root:not(.dark)) .brandLogoText {
+    color: #09090b;
+  }
+  :global(:root:not(.dark)) .navBackBtn,
+  :global(:root:not(.dark)) .navSupportBtn {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid #e4e4e7;
+    color: #18181b;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+  :global(:root:not(.dark)) .inputGlass {
+    background: #f4f4f5;
+    border: 1px solid #e4e4e7;
+    color: #18181b;
+  }
+  :global(:root:not(.dark)) .inputGlass::placeholder {
+    color: #a1a1aa;
+  }
+  :global(:root:not(.dark)) .inputLabel {
+    color: #3f3f46;
+  }
+  :global(:root:not(.dark)) .stepSegment {
+    background: rgba(0, 0, 0, 0.08);
+  }
+  :global(:root:not(.dark)) .otpInputBox {
+    background: #f4f4f5;
+    border-color: #e4e4e7;
+    color: #0284c7;
+  }
+  :global(:root:not(.dark)) .collegeChip {
+    background: #f4f4f5;
+    border-color: #e4e4e7;
+    color: #3f3f46;
+  }
+}
+

@@ -55,7 +55,8 @@ export default function NimoSplash({
       style={{
         position: "fixed",
         inset: 0,
-        backgroundColor: "#080c14",
+        backgroundColor: "var(--background)",
+        color: "var(--foreground)",
         zIndex: 9999999,
         display: "flex",
         flexDirection: "column",
@@ -105,10 +106,10 @@ export default function NimoSplash({
               fontFamily: 'var(--font-heading), -apple-system, BlinkMacSystemFont, "Figtree", "Segoe UI", Roboto, sans-serif',
               fontSize: "clamp(4.2rem, 14vw, 6.8rem)",
               fontWeight: 800,
-              color: "#ffffff",
+              color: "var(--foreground)",
               letterSpacing: "-0.05em",
               lineHeight: 0.95,
-              textShadow: "0 0 40px rgba(56, 189, 248, 0.35)",
+              textShadow: "0 0 40px rgba(56, 189, 248, 0.25)",
             }}
           >
             nimo
@@ -132,11 +133,12 @@ export default function NimoSplash({
             display: "flex",
             alignItems: "center",
             gap: "8px",
-            backgroundColor: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            padding: "5px 14px",
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+            padding: "6px 16px",
             borderRadius: "100px",
-            backdropFilter: "blur(8px)",
+            backdropFilter: "blur(12px)",
+            boxShadow: "var(--glass-shadow)",
           }}
         >
           <span
@@ -153,7 +155,7 @@ export default function NimoSplash({
               fontFamily: 'var(--font-heading), -apple-system, BlinkMacSystemFont, sans-serif',
               fontSize: "0.78rem",
               fontWeight: 500,
-              color: "#94a3b8",
+              color: "var(--muted-foreground)",
               letterSpacing: "0.04em",
               textTransform: "lowercase",
             }}
@@ -167,11 +169,11 @@ export default function NimoSplash({
           style={{
             marginTop: "16px",
             fontSize: "0.72rem",
-            color: "#64748b",
+            color: "var(--muted-foreground)",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
             fontFamily: 'var(--font-heading), -apple-system, BlinkMacSystemFont, sans-serif',
-            opacity: 0.7,
+            opacity: 0.8,
           }}
         >
           Tap anywhere to enter

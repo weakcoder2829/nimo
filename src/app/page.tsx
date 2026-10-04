@@ -64,9 +64,9 @@ export default function RootPage() {
         {!isAuthenticated || !user ? (
           <NimoAuth initialMode="signin" />
         ) : (
-          <div className="min-h-screen bg-[#080c14] text-white flex flex-col items-center justify-center p-6 text-center space-y-4">
-            <div className="w-10 h-10 rounded-full border-2 border-sky-400 border-t-transparent animate-spin" />
-            <p className="text-xs text-slate-400 font-sans tracking-wide">
+          <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center space-y-4">
+            <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            <p className="text-xs text-muted-foreground font-sans tracking-wide">
               Entering campus feed...
             </p>
           </div>

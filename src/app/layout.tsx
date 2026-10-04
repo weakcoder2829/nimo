@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Figtree, Lora } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/lib/authContext";
+import ThemeSync from "@/components/ThemeSync";
 
 const figtree = Figtree({
   subsets: ["latin"],
@@ -21,7 +23,19 @@ export const metadata: Metadata = {
   description: "Unfiltered campus banter, anonymous confessions, and local college radar within 5 miles.",
 };
 
-import { AuthProvider } from "@/lib/authContext";
+// Immediate blocking script to prevent flash of wrong theme (FOUC)
+const themeInitScript = `
+(function() {
+  try {
+    var media = window.matchMedia('(prefers-color-scheme: dark)');
+    if (media.matches) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  } catch (e) {}
+})();
+`;
 
 export default function RootLayout({
   children,
@@ -29,8 +43,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${figtree.variable} ${lora.variable}`}>
-      <body className="min-h-screen bg-background text-foreground antialiased font-body selection:bg-primary/20 selection:text-primary">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${figtree.variable} ${lora.variable}`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="min-h-screen bg-background text-foreground antialiased font-body selection:bg-primary/20 selection:text-primary transition-colors duration-200">
+        <ThemeSync />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
