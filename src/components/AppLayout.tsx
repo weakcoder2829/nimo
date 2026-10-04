@@ -6,21 +6,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
 import NimoAuth from "@/components/NimoAuth";
 import {
-  Home,
+  Flame,
+  TrendingUp,
+  GraduationCap,
+  MessageSquare,
   Search,
-  Compass,
-  Film,
-  Send as PaperPlane,
-  Heart,
-  PlusSquare,
-  Menu,
+  PlusCircle,
   LogOut,
   MapPin,
   ShieldCheck,
-  Sparkles,
-  Bookmark,
-  Settings,
-  Grid,
+  Plus,
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -36,21 +31,18 @@ export default function AppLayout({
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
-  const [profileModalOpen, setProfileModalOpen] = useState(false);
-  const [activeTabProfile, setActiveTabProfile] = useState<"posts" | "saved">("posts");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // The 5 original core navigation tabs
   const navItems = [
-    { label: "Home", href: "/feed", icon: Home, badge: null },
-    { label: "Search", href: "/search", icon: Search, badge: null },
-    { label: "Explore", href: "/trending", icon: Compass, badge: null },
-    { label: "Reels & Radar", href: "/college", icon: Film, badge: null },
-    { label: "Messages", href: "/messages", icon: PaperPlane, badge: "2" },
-    { label: "Notifications", href: "/feed", icon: Heart, badge: null },
-    { label: "Create", href: "/post", icon: PlusSquare, badge: null },
+    { label: "Feed", href: "/feed", icon: Flame, count: null },
+    { label: "Trending", href: "/trending", icon: TrendingUp, count: "Hot" },
+    { label: "My College", href: "/college", icon: GraduationCap, count: "1.4k" },
+    { label: "Messages", href: "/messages", icon: MessageSquare, count: "2" },
+    { label: "Search", href: "/search", icon: Search, count: null },
   ];
 
   if (!mounted || isLoading) {
@@ -73,290 +65,195 @@ export default function AppLayout({
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row relative selection:bg-primary/20 selection:text-primary">
-      {/* Background ambient mesh glow */}
+      {/* Background ambient lighting glow */}
       <div className="ambient-light-glow">
         <div className="orb-blue" />
         <div className="orb-purple" />
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. MOBILE TOP HEADER (Instagram Style: Logo + Heart + Direct Paper Plane) */}
+      {/* 1. MOBILE TOP HEADER (Glassmorphic)                                       */}
       {/* ========================================================================= */}
-      <header className="md:hidden sticky top-0 z-40 px-4 py-2.5 glass-nav-header flex items-center justify-between border-b border-border/80">
-        <Link href="/feed" className="flex items-center gap-1 select-none">
-          <span className="font-heading font-black text-2xl tracking-tighter text-foreground">
-            nimo<span className="text-primary">.</span>
-          </span>
-          <span className="text-[10px] text-muted-foreground font-heading uppercase px-1.5 py-0.5 rounded-full bg-muted/60">
-            radar
-          </span>
-        </Link>
-
-        <div className="flex items-center gap-3">
-          <Link href="/trending" className="text-foreground hover:text-muted-foreground">
-            <Heart className="w-6 h-6" />
-          </Link>
-
-          <Link href="/messages" className="relative text-foreground hover:text-muted-foreground">
-            <PaperPlane className="w-6 h-6 -rotate-45" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#ed4956] text-white rounded-full text-[9px] font-heading font-black flex items-center justify-center">
-              2
+      <header className="md:hidden sticky top-0 z-40 px-3 py-2.5 glass-nav-header flex items-center justify-between border-b border-border/80">
+        <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-1.5 select-none">
+            <span className="font-heading font-black text-2xl tracking-tight text-primary">
+              nimo<span className="text-foreground">.</span>
             </span>
           </Link>
+          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-heading font-medium bg-primary/10 text-primary border border-primary/20 max-w-[140px] truncate">
+            <MapPin className="w-2.5 h-2.5 shrink-0" />
+            <span className="truncate">{effectiveCollege}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="px-2.5 py-1 rounded-full text-[11px] font-heading font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            {user.studentName.split(" ")[0]}
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            title="Sign out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </header>
 
       {/* ========================================================================= */}
-      {/* 2. DESKTOP LEFT SIDEBAR (Instagram Web Style Rail)                        */}
+      {/* 2. DESKTOP LEFT SIDEBAR (Glassmorphic)                                    */}
       {/* ========================================================================= */}
-      <aside className="hidden md:flex flex-col w-60 lg:w-64 sticky top-0 h-screen glass-sidebar p-5 justify-between select-none shrink-0 z-30">
+      <aside className="hidden md:flex flex-col w-64 lg:w-72 sticky top-0 h-screen glass-sidebar p-5 justify-between select-none shrink-0 z-30">
         <div className="space-y-6">
-          {/* Instagram Wordmark Logo */}
-          <Link href="/feed" className="block pt-2 px-2">
-            <span className="font-heading font-black text-3xl tracking-tighter text-foreground hover:opacity-90 transition-opacity">
-              nimo<span className="text-primary">.</span>
-            </span>
-          </Link>
+          {/* Logo & Radar Indicator */}
+          <div className="space-y-2">
+            <Link href="/" className="flex items-center gap-2 group">
+              <span className="font-heading font-black text-3xl tracking-tight text-primary group-hover:scale-105 transition-transform">
+                nimo<span className="text-foreground">.</span>
+              </span>
+              <span className="clay-badge text-[10px] font-heading font-bold uppercase tracking-wider text-primary">
+                radar
+              </span>
+            </Link>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-heading">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Campus Radar (5mi active)</span>
+            </div>
+          </div>
 
-          {/* Navigation Items */}
-          <nav className="space-y-1">
+          {/* Student Profile Glass/Clay Card */}
+          <div className="p-3.5 rounded-2xl clay-card space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-heading font-semibold text-muted-foreground">
+                Verified Student
+              </span>
+              <span className="text-[10px] font-heading font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                Active
+              </span>
+            </div>
+            <div className="font-heading font-bold text-sm text-foreground flex items-center gap-2">
+              <div className="clay-avatar w-6 h-6 text-xs">👨‍💻</div>
+              <span className="truncate">{user.studentName}</span>
+            </div>
+            <div className="text-[11px] text-muted-foreground font-heading space-y-0.5">
+              <div>ID: <strong className="text-foreground">{user.rollNumber}</strong></div>
+              <div className="truncate">{effectiveCollege}</div>
+            </div>
+          </div>
+
+          {/* The Original 5 Navigation Links */}
+          <nav className="space-y-1.5">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
               return (
-                <Link key={item.label} href={item.href} className="block">
+                <Link key={item.href} href={item.href} className="block">
                   <div
-                    className={`flex items-center justify-between px-3.5 py-3 rounded-2xl font-heading text-sm transition-all group ${
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-heading text-sm font-bold transition-all ${
                       isActive
-                        ? "font-black text-foreground bg-black/5 dark:bg-white/10"
-                        : "font-semibold text-foreground/80 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                        ? "clay-button-primary text-white shadow-md shadow-primary/20"
+                        : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
                     }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <Icon
-                        className={`w-6 h-6 transition-transform group-hover:scale-105 ${
-                          isActive ? "stroke-[2.5px] text-foreground" : "stroke-2"
-                        } ${item.label === "Messages" ? "-rotate-45" : ""}`}
-                      />
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-4 h-4" />
                       <span>{item.label}</span>
                     </div>
-
-                    {item.badge && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#ed4956] text-white">
-                        {item.badge}
+                    {item.count && (
+                      <span
+                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "clay-badge text-primary"
+                        }`}
+                      >
+                        {item.count}
                       </span>
                     )}
                   </div>
                 </Link>
               );
             })}
+          </nav>
 
-            {/* Profile Tab */}
+          {/* Post CTA (Clay Button) */}
+          <Link href="/post" className="block pt-1">
             <button
               type="button"
-              onClick={() => setProfileModalOpen(true)}
-              className="w-full flex items-center gap-4 px-3.5 py-3 rounded-2xl font-heading text-sm font-semibold text-foreground/80 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-all text-left"
+              className="clay-button-primary w-full h-11 text-sm font-heading font-black rounded-2xl"
             >
-              <div className="clay-avatar w-6 h-6 text-xs shrink-0 ring-2 ring-primary/40">
-                👨‍💻
-              </div>
-              <span className="truncate">Profile</span>
+              <PlusCircle className="w-4 h-4" />
+              <span>Drop Anonymous Yak</span>
             </button>
-          </nav>
+          </Link>
         </div>
 
-        {/* Sidebar Bottom: More / Sign Out */}
-        <div className="pt-4 border-t border-border/60 space-y-2">
-          <button
-            type="button"
-            onClick={logout}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-heading font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Log out</span>
-          </button>
+        {/* Sidebar Footer */}
+        <div className="pt-4 border-t border-border/60 space-y-3">
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-heading">
+            <Link href="/" className="hover:text-primary transition-colors">
+              Homepage
+            </Link>
+            <button
+              type="button"
+              onClick={logout}
+              className="text-xs text-destructive hover:underline transition-all flex items-center gap-1 font-semibold"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign Out</span>
+            </button>
+          </div>
 
-          <div className="px-3.5 text-[11px] text-muted-foreground font-heading">
-            Aggarwal College Hub &bull; 1.4k online
+          <div className="p-2.5 rounded-2xl glass-card border border-border/50 text-[11px] text-muted-foreground flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>100% Encrypted & Anonymous. Zero tracking.</span>
           </div>
         </div>
       </aside>
 
       {/* ========================================================================= */}
-      {/* 3. MAIN PAGE CONTENT                                                      */}
+      {/* 3. MAIN PAGE VIEW                                                         */}
       {/* ========================================================================= */}
-      <main className="flex-1 min-w-0 pb-20 md:pb-8 relative z-10">
+      <main className="flex-1 min-w-0 pb-24 md:pb-8 relative z-10">
         {children}
       </main>
 
       {/* ========================================================================= */}
-      {/* 4. MOBILE BOTTOM BAR (The iconic 5-tab Instagram layout)                  */}
+      {/* 4. MOBILE BOTTOM NAVIGATION DOCK (Original 5 Features + Post)             */}
       {/* ========================================================================= */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass-nav-header border-t border-border/80 px-4 py-2 flex items-center justify-around shadow-2xl backdrop-blur-2xl">
-        {/* 1. Home */}
-        <Link href="/feed">
-          <div
-            className={`p-2 transition-transform active:scale-125 ${
-              pathname === "/feed" ? "text-foreground font-bold" : "text-muted-foreground"
-            }`}
-          >
-            <Home className="w-6 h-6" />
+      <nav className="md:hidden fixed bottom-3 left-3 right-3 z-50 rounded-2xl glass-card border border-border/80 px-2 py-2 flex items-center justify-around shadow-2xl backdrop-blur-2xl">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
+          return (
+            <Link key={item.href} href={item.href} className="flex-1">
+              <div
+                className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all relative ${
+                  isActive ? "text-primary font-bold scale-105" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-heading font-medium mt-1">{item.label}</span>
+                {item.count && (
+                  <span className="absolute top-0 right-2 w-1.5 h-1.5 rounded-full bg-primary" />
+                )}
+              </div>
+            </Link>
+          );
+        })}
+
+        {/* Mobile quick post button */}
+        <Link href="/post" className="flex-1">
+          <div className="flex flex-col items-center justify-center py-0.5 text-primary">
+            <div className="clay-button-primary w-9 h-9 rounded-full flex items-center justify-center p-0 shadow-md">
+              <Plus className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-[10px] font-heading font-semibold mt-0.5">Post</span>
           </div>
         </Link>
-
-        {/* 2. Search / Explore */}
-        <Link href="/search">
-          <div
-            className={`p-2 transition-transform active:scale-125 ${
-              pathname === "/search" ? "text-foreground font-bold" : "text-muted-foreground"
-            }`}
-          >
-            <Search className="w-6 h-6" />
-          </div>
-        </Link>
-
-        {/* 3. Create (+) */}
-        <Link href="/post">
-          <div className="p-2 transition-transform active:scale-125 text-foreground">
-            <PlusSquare className="w-6 h-6" />
-          </div>
-        </Link>
-
-        {/* 4. Reels / Radar */}
-        <Link href="/college">
-          <div
-            className={`p-2 transition-transform active:scale-125 ${
-              pathname === "/college" ? "text-foreground font-bold" : "text-muted-foreground"
-            }`}
-          >
-            <Film className="w-6 h-6" />
-          </div>
-        </Link>
-
-        {/* 5. Profile */}
-        <button
-          type="button"
-          onClick={() => setProfileModalOpen(true)}
-          className="p-1 focus:outline-none"
-        >
-          <div className="clay-avatar w-7 h-7 text-xs ring-2 ring-foreground/30">
-            👨‍💻
-          </div>
-        </button>
       </nav>
-
-      {/* ========================================================================= */}
-      {/* 5. INSTAGRAM PROFILE MODAL                                                */}
-      {/* ========================================================================= */}
-      {profileModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-3 select-none">
-          <div className="clay-card p-6 sm:p-8 max-w-md w-full space-y-5 animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-border/60">
-              <span className="font-heading font-black text-sm text-foreground">
-                mukul_cse
-              </span>
-              <button
-                type="button"
-                onClick={() => setProfileModalOpen(false)}
-                className="text-muted-foreground hover:text-foreground text-sm font-bold"
-              >
-                &times;
-              </button>
-            </div>
-
-            {/* Profile Header (Avatar + Stats) */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="ig-story-ring p-0.5 shrink-0">
-                <div className="ig-story-avatar-inner">
-                  <div className="clay-avatar w-16 h-16 text-3xl">👨‍💻</div>
-                </div>
-              </div>
-
-              <div className="flex-1 flex justify-around text-center">
-                <div>
-                  <div className="font-heading font-black text-base text-foreground">24</div>
-                  <div className="text-[11px] text-muted-foreground font-heading">posts</div>
-                </div>
-                <div>
-                  <div className="font-heading font-black text-base text-foreground">1,840</div>
-                  <div className="text-[11px] text-muted-foreground font-heading">karma</div>
-                </div>
-                <div>
-                  <div className="font-heading font-black text-base text-foreground">1.4k</div>
-                  <div className="text-[11px] text-muted-foreground font-heading">radar</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bio */}
-            <div className="text-xs space-y-1 font-heading">
-              <div className="font-bold text-foreground">{user.studentName}</div>
-              <div className="text-muted-foreground">ID: {user.rollNumber} &bull; {effectiveCollege}</div>
-              <p className="font-body text-foreground/90 leading-snug">
-                Building code & surviving Computer Networks labs 🦉 | Verified anonymous voice.
-              </p>
-            </div>
-
-            {/* Instagram Profile Action Buttons */}
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                type="button"
-                className="clay-button-secondary flex-1 py-1.5 text-xs font-heading font-bold rounded-xl"
-              >
-                Edit Profile
-              </button>
-              <button
-                type="button"
-                className="clay-button-secondary flex-1 py-1.5 text-xs font-heading font-bold rounded-xl"
-              >
-                Share Profile
-              </button>
-            </div>
-
-            {/* Tabs: Grid / Saved */}
-            <div className="flex items-center justify-around border-t border-border/50 pt-2 text-xs font-heading font-bold">
-              <button
-                type="button"
-                onClick={() => setActiveTabProfile("posts")}
-                className={`flex items-center gap-1.5 py-1 ${
-                  activeTabProfile === "posts" ? "text-primary border-b-2 border-primary" : "text-muted-foreground"
-                }`}
-              >
-                <Grid className="w-4 h-4" />
-                <span>POSTS</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTabProfile("saved")}
-                className={`flex items-center gap-1.5 py-1 ${
-                  activeTabProfile === "saved" ? "text-primary border-b-2 border-primary" : "text-muted-foreground"
-                }`}
-              >
-                <Bookmark className="w-4 h-4" />
-                <span>SAVED</span>
-              </button>
-            </div>
-
-            {/* Close Button */}
-            <div className="pt-2 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={logout}
-                className="text-xs text-destructive hover:underline font-semibold"
-              >
-                Log Out
-              </button>
-              <button
-                type="button"
-                onClick={() => setProfileModalOpen(false)}
-                className="clay-button-primary px-4 py-1.5 text-xs font-heading font-bold rounded-xl"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
