@@ -1,22 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Newsreader } from "next/font/google";
+import { Figtree, Lora } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-sans",
+const figtree = Figtree({
   subsets: ["latin"],
+  variable: "--font-heading",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-const newsreader = Newsreader({
-  variable: "--font-serif",
+const lora = Lora({
   subsets: ["latin"],
-  style: ["normal", "italic"],
+  variable: "--font-body",
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "nimo — The Anonymous Campus Confessions & Pulse",
-  description: "Unfiltered campus banter, anonymous confessions, and local college radar within 5 miles. 100% anonymous.",
+  title: "nimo. — The Anonymous Campus Social Pulse",
+  description: "Unfiltered campus banter, anonymous confessions, and local college radar within 5 miles.",
 };
+
+import { AuthProvider } from "@/lib/authContext";
 
 export default function RootLayout({
   children,
@@ -24,8 +29,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${newsreader.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${figtree.variable} ${lora.variable}`}>
+      <body className="min-h-screen bg-background text-foreground antialiased font-body selection:bg-primary/20 selection:text-primary">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

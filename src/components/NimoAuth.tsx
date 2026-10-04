@@ -1,124 +1,288 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/authContext";
+import styles from "./NimoAuth.module.css";
+import {
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  ShieldCheck,
+  Upload,
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+  HelpCircle,
+  X,
+  Phone,
+  GraduationCap,
+  FileText,
+  Mail,
+  MessageCircle,
+} from "lucide-react";
 
-interface NimoAuthProps {
+export interface NimoAuthProps {
   initialMode?: "signin" | "signup";
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export default function NimoAuth({ initialMode = "signin", onClose }: NimoAuthProps = {}) {
-  const router = useRouter();
-  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
-  const [signupStep, setSignupStep] = useState<number>(1);
+const POPULAR_COLLEGES = [
+  "Aggarwal College",
+  "JC Bose UST (YMCA)",
+  "Manav Rachna Univ",
+  "Delhi University",
+  "Faridabad Institute",
+];
 
-  // Sign in state
+export default function NimoAuth({
+  initialMode = "signin",
+  onClose,
+  onSuccess,
+}: NimoAuthProps = {}) {
+  const router = useRouter();
+  const { login, signup, quickDemoLogin, isAuthenticated } = useAuth();
+
+  // Mode: "signin" | "signup"
+  const [mode, setMode] = useState<"signin" | "signup">(initialMode);
+  // Sign up step: strictly 1, 2, or 3, then 4 for verified celebration
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+
+  // Sync mode with route prop when navigating between /login and /signup
+  useEffect(() => {
+    setMode(initialMode);
+    if (initialMode === "signup") {
+      setStep(1);
+    }
+  }, [initialMode]);
+
+  // Sign In State
   const [loginIdentifier, setLoginIdentifier] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const [loginStatus, setLoginStatus] = useState<string | null>(null);
-  const [loginLoading, setLoginLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Step 1: Mobile verification state
   const [mobileNumber, setMobileNumber] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [isMobileVerified, setIsMobileVerified] = useState(false);
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [resendTimer, setResendTimer] = useState(0);
 
-  // Step 2: University details state
+  // Step 2: Student details state
+  const [studentName, setStudentName] = useState("");
+  const [username, setUsername] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+
+  // Step 3: College ID state (LAST STEP)
+  const [collegeName, setCollegeName] = useState("Aggarwal College");
   const [rollNumber, setRollNumber] = useState("");
-  const [fullName, setFullName] = useState("");
-
-  // Step 3: University ID upload state
   const [idFile, setIdFile] = useState<File | null>(null);
   const [idPreviewUrl, setIdPreviewUrl] = useState<string | null>(null);
+  const [sampleIdUsed, setSampleIdUsed] = useState(false);
 
-  // Step 4: Password state
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  // UI state
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
-  // Common notification/feedback state
-  const [errorNotice, setErrorNotice] = useState<string | null>(null);
-  const [supportOpen, setSupportOpen] = useState(false);
+  // OTP inputs refs
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Handle Login
-  const handleSignInSubmit = (e: React.FormEvent) => {
+  // Resend OTP countdown effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  // Handle global back
+  const handleNavBack = () => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    if (mode === "signup") {
+      if (step > 1 && step <= 3) {
+        setStep((step - 1) as 1 | 2 | 3);
+        return;
+      } else {
+        setMode("signin");
+        return;
+      }
+    }
+
+    if (onClose) {
+      onClose();
+    } else {
+      router.push("/");
+    }
+  };
+
+  // --- SIGN IN SUBMIT ---
+  const handleSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorNotice(null);
-    setLoginStatus(null);
+    setErrorMessage(null);
+    setSuccessMessage(null);
 
     if (!loginIdentifier.trim()) {
-      setErrorNotice("Please enter your registered username or university roll number.");
+      setErrorMessage("Please enter your username or university roll number.");
       return;
     }
     if (!loginPassword) {
-      setErrorNotice("Please enter your account password to sign in.");
+      setErrorMessage("Please enter your account password.");
       return;
     }
 
-    setLoginLoading(true);
-    setTimeout(() => {
-      setLoginLoading(false);
-      setLoginStatus(`Welcome back! Successfully authenticated as ${loginIdentifier}. Redirecting...`);
+    setLoading(true);
+    const result = await login(loginIdentifier, loginPassword);
+    setLoading(false);
+
+    if (result.success) {
+      setSuccessMessage("Authentication successful! Loading campus feed...");
       setTimeout(() => {
-        router.push("/dashboard");
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push("/feed");
+        }
       }, 500);
-    }, 600);
+    } else {
+      setErrorMessage(result.error || "Failed to sign in. Please verify your details.");
+    }
   };
 
-  // Step 1: Send OTP
+  // --- QUICK DEMO LOGIN ---
+  const handleDemoSignIn = () => {
+    setLoading(true);
+    setTimeout(() => {
+      quickDemoLogin();
+      setLoading(false);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push("/feed");
+      }
+    }, 400);
+  };
+
+  // --- STEP 1: SEND OTP ---
   const handleSendOtp = () => {
-    setErrorNotice(null);
-    const cleaned = mobileNumber.replace(/\D/g, "");
-    if (cleaned.length < 10) {
-      setErrorNotice("Please enter a valid 10-digit mobile phone number.");
+    setErrorMessage(null);
+    const cleanNumber = mobileNumber.replace(/\D/g, "");
+    if (cleanNumber.length < 10) {
+      setErrorMessage("Please enter a valid 10-digit mobile phone number.");
       return;
     }
+
     setOtpSent(true);
+    setResendTimer(45);
+    setSuccessMessage("OTP code sent to +91 " + cleanNumber + "! Use demo code: 123456");
+    // Focus first OTP box
+    setTimeout(() => {
+      otpInputRefs.current[0]?.focus();
+    }, 100);
   };
 
-  // Step 1: Verify OTP
-  const handleVerifyOtp = () => {
-    setErrorNotice(null);
-    if (!otpCode.trim()) {
-      setErrorNotice("Please enter the verification code sent to your phone.");
-      return;
+  const handleOtpDigitChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newDigits = [...otpDigits];
+    newDigits[index] = value.slice(-1);
+    setOtpDigits(newDigits);
+
+    // Auto-advance
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
     }
-    if (otpCode.trim() !== "123456" && otpCode.trim().length !== 6) {
-      setErrorNotice("Invalid verification code. Please enter 123456 for demo verification.");
-      return;
-    }
-    setIsMobileVerified(true);
-    setSignupStep(2);
   };
 
-  // Step 2: Proceed to ID upload
-  const handleProceedToId = (e: React.FormEvent) => {
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const fillDemoOtp = () => {
+    setOtpDigits(["1", "2", "3", "4", "5", "6"]);
+    setErrorMessage(null);
+  };
+
+  // --- STEP 1: VERIFY & ADVANCE TO STEP 2 ---
+  const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorNotice(null);
-    if (!rollNumber.trim()) {
-      setErrorNotice("Please provide your official university roll number.");
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const cleanNumber = mobileNumber.replace(/\D/g, "");
+    if (cleanNumber.length < 10) {
+      setErrorMessage("Please enter a valid 10-digit mobile number first.");
       return;
     }
-    if (!fullName.trim()) {
-      setErrorNotice("Please enter your full legal student name.");
+
+    if (!otpSent) {
+      handleSendOtp();
       return;
     }
-    setSignupStep(3);
+
+    const code = otpDigits.join("");
+    if (code.length < 6) {
+      setErrorMessage("Please enter the complete 6-digit verification code.");
+      return;
+    }
+
+    if (code !== "123456" && code !== "000000") {
+      setErrorMessage("Invalid code. Use demo code: 123456 to verify.");
+      return;
+    }
+
+    // Step 1 Completed! Advance to Step 2
+    setSuccessMessage("Mobile number verified successfully!");
+    setTimeout(() => {
+      setSuccessMessage(null);
+      setStep(2);
+    }, 350);
   };
 
-  // Step 3: Handle file selection
+  // --- STEP 2: STUDENT DETAILS SUBMIT & ADVANCE TO STEP 3 ---
+  const handleStep2Submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!studentName.trim()) {
+      setErrorMessage("Please enter your official Full Student Name.");
+      return;
+    }
+    if (signupPassword.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
+      return;
+    }
+    if (signupPassword !== confirmPassword) {
+      setErrorMessage("Passwords do not match. Please re-enter.");
+      return;
+    }
+
+    // Step 2 Completed! Advance to Step 3 (LAST STEP: College ID)
+    setStep(3);
+  };
+
+  // --- STEP 3: COLLEGE ID FILE HANDLER ---
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setErrorNotice(null);
+    setErrorMessage(null);
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorNotice("The uploaded file exceeds the 5 MB maximum size limit.");
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMessage("File exceeds 10MB limit. Please upload a smaller file.");
       return;
     }
 
     setIdFile(file);
+    setSampleIdUsed(false);
     if (file.type.startsWith("image/")) {
       setIdPreviewUrl(URL.createObjectURL(file));
     } else {
@@ -126,574 +290,744 @@ export default function NimoAuth({ initialMode = "signin", onClose }: NimoAuthPr
     }
   };
 
-  const handleProceedToPassword = () => {
-    setErrorNotice(null);
-    if (!idFile) {
-      setErrorNotice("Please upload an image or scan of your university ID card to proceed.");
-      return;
+  const useSampleStudentId = () => {
+    setSampleIdUsed(true);
+    setIdFile(null);
+    setIdPreviewUrl(null);
+    if (!rollNumber) {
+      setRollNumber("2024-CSE-0412");
     }
-    setSignupStep(4);
+    setSuccessMessage("Sample College ID attached and pre-verified!");
   };
 
-  // Step 4: Complete registration
-  const handleCompleteRegistration = (e: React.FormEvent) => {
+  // --- STEP 3: FINAL SUBMIT ---
+  const handleStep3Submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorNotice(null);
-    if (password.length < 8) {
-      setErrorNotice("Your password must contain at least 8 characters.");
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    if (!collegeName.trim()) {
+      setErrorMessage("Please enter or select your College / University name.");
       return;
     }
-    if (password !== confirmPassword) {
-      setErrorNotice("The passwords do not match. Please ensure both fields are identical.");
+    if (!rollNumber.trim()) {
+      setErrorMessage("Please provide your official College Roll Number / Student ID.");
       return;
     }
-    setSignupStep(5);
-  };
+    if (!idFile && !sampleIdUsed) {
+      setErrorMessage("Please upload your Student ID Card photo or use the sample ID option.");
+      return;
+    }
 
-  // Reset and switch modes
-  const handleSwitchToSignUp = () => {
-    setErrorNotice(null);
-    setLoginStatus(null);
-    setSignupStep(1);
-    setMode("signup");
-  };
+    setLoading(true);
+    const result = await signup({
+      mobile: mobileNumber,
+      studentName: studentName.trim(),
+      username: username.trim() || studentName.toLowerCase().replace(/\s+/g, "_"),
+      rollNumber: rollNumber.trim(),
+      collegeName: collegeName.trim(),
+      password: signupPassword,
+      idCardName: idFile ? idFile.name : "verified_student_id.png",
+      idCardUrl: idPreviewUrl || undefined,
+    });
+    setLoading(false);
 
-  const handleSwitchToSignIn = () => {
-    setErrorNotice(null);
-    setLoginStatus(null);
-    setMode("signin");
-  };
-
-  const handleBack = () => {
-    setErrorNotice(null);
-    if (mode === "signup") {
-      if (signupStep > 1 && signupStep <= 4) {
-        setSignupStep(signupStep - 1);
-      } else if (onClose && initialMode === "signup") {
-        onClose();
-      } else if (initialMode === "signup") {
-        router.push("/");
-      } else {
-        setMode("signin");
-      }
+    if (result.success) {
+      setStep(4); // Celebration screen
     } else {
-      if (onClose) {
-        onClose();
-      } else {
-        router.push("/");
-      }
+      setErrorMessage(result.error || "Failed to complete verification. Please check inputs.");
     }
   };
 
   return (
-    <div className="nimo-viewport">
-      {/* Top Header Navigation */}
-      <header className="nimo-topbar">
-        <div className="topbar-left">
-          <button
-            type="button"
-            className="topbar-back-btn"
-            onClick={handleBack}
-            aria-label="Go back"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
-            <span>Back</span>
-          </button>
-        </div>
+    <div className={styles.pageContainer}>
+      {/* Ambient background glow orbs */}
+      <div className={styles.ambientScene}>
+        <div className={styles.ambientGridPattern} />
+        <div className={styles.orbOne} />
+        <div className={styles.orbTwo} />
+        <div className={styles.orbThree} />
+      </div>
 
-        <div className="topbar-center">
-          <div className="nimo-brand" onClick={() => router.push("/")} role="button" tabIndex={0}>
-            <svg className="nimo-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="8.5" />
-              <circle cx="12" cy="12" r="3.5" />
-              <line x1="12" y1="3.5" x2="12" y2="8.5" />
-            </svg>
-            <span className="nimo-wordmark">nimo</span>
+      {/* ==================== TOP NAVIGATION BAR ==================== */}
+      <header className={styles.topNavbar}>
+        <button
+          type="button"
+          className={styles.navBackBtn}
+          onClick={handleNavBack}
+          aria-label="Back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
+        </button>
+
+        {/* Center: ◎ nimo Logo */}
+        <div
+          className={styles.navBrandWrap}
+          onClick={() => {
+            if (isAuthenticated) router.push("/");
+          }}
+        >
+          <div className={styles.brandLogoIcon}>
+            <div className={styles.brandLogoDot} />
           </div>
+          <span className={styles.brandLogoText}>nimo</span>
         </div>
 
-        <div className="topbar-right">
-          <button
-            type="button"
-            className="topbar-support-btn"
-            onClick={() => setSupportOpen(true)}
-          >
-            Contact support
-          </button>
-        </div>
+        {/* Right: Contact Support */}
+        <button
+          type="button"
+          className={styles.navSupportBtn}
+          onClick={() => setIsSupportOpen(true)}
+        >
+          <HelpCircle className="w-4 h-4" />
+          <span>Contact support</span>
+        </button>
       </header>
 
-      {/* Main Content Card Container */}
-      <main className="nimo-main">
-        <div className="nimo-card">
-          {errorNotice && (
-            <div className="nimo-alert nimo-alert-error" role="alert">
-              <span>{errorNotice}</span>
+      {/* ==================== MAIN GLASS CARD ==================== */}
+      <main className={styles.mainContentArea}>
+        <div className={styles.glassCard}>
+          {/* Alerts */}
+          {errorMessage && (
+            <div className={`${styles.alertBox} ${styles.alertError}`} role="alert">
+              <span className="shrink-0">⚠️</span>
+              <span>{errorMessage}</span>
             </div>
           )}
 
-          {loginStatus && (
-            <div className="nimo-alert nimo-alert-success" role="status">
-              <span>{loginStatus}</span>
+          {successMessage && (
+            <div className={`${styles.alertBox} ${styles.alertSuccess}`} role="status">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{successMessage}</span>
             </div>
           )}
 
-          {/* ==================== SIGN IN VIEW ==================== */}
+          {/* ======================================================== */}
+          {/* VIEW: LOG IN TO NIMO                                     */}
+          {/* ======================================================== */}
           {mode === "signin" && (
-            <div className="flow-step-container">
-              <div className="card-heading-group">
-                <h1 className="card-title">Log in to nimo</h1>
-                <p className="card-subtitle">Your academic journey starts here</p>
+            <div>
+              <div className={styles.cardHeader}>
+                <h1 className={styles.titlePrimary}>Log in to nimo</h1>
+                <p className={styles.subtitleMuted}>Your academic journey starts here</p>
               </div>
 
-              {/* Social Quick Auth Buttons */}
-              <div className="social-row">
-                <button
-                  type="button"
-                  className="social-btn"
-                  title="Sign in with X"
-                  onClick={() => setErrorNotice("Social authentication is in demo mode. Please use your username or roll number below.")}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="social-btn"
-                  title="Sign in with Apple"
-                  onClick={() => setErrorNotice("Apple Sign-in is in demo mode. Please use your credentials below.")}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.76 1.05-1.81.93-2.87-.9.04-2.02.6-2.67 1.36-.58.67-1.09 1.74-.95 2.78 1.02.08 2.07-.51 2.69-1.27z"/>
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="social-btn"
-                  title="Sign in with Google"
-                  onClick={() => setErrorNotice("Google authentication is in demo mode. Please use your credentials below.")}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
-                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
-                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-                  </svg>
-                </button>
-              </div>
+              <form onSubmit={handleSignInSubmit}>
+                <div className={styles.formGroup}>
+                  {/* Username or Roll Number */}
+                  <div className={styles.fieldWrapper}>
+                    <label className={styles.fieldLabel}>Username or Roll number</label>
+                    <div className={styles.inputGlassWrap}>
+                      <input
+                        type="text"
+                        className={styles.inputGlass}
+                        placeholder="Enter username or university roll number"
+                        value={loginIdentifier}
+                        onChange={(e) => {
+                          setLoginIdentifier(e.target.value);
+                          setErrorMessage(null);
+                        }}
+                        required
+                        autoComplete="username"
+                      />
+                    </div>
+                  </div>
 
-              <div className="nimo-divider">
-                <span>or</span>
-              </div>
-
-              {/* Login Form */}
-              <form onSubmit={handleSignInSubmit} className="nimo-form">
-                <div className="nimo-field">
-                  <label htmlFor="signin-id" className="nimo-label">
-                    Username or Roll number
-                  </label>
-                  <input
-                    id="signin-id"
-                    type="text"
-                    className="nimo-input"
-                    placeholder="Enter username or university roll number"
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    disabled={loginLoading}
-                    autoComplete="username"
-                  />
+                  {/* Password */}
+                  <div className={styles.fieldWrapper}>
+                    <label className={styles.fieldLabel}>
+                      <span>Password</span>
+                    </label>
+                    <div className={styles.inputGlassWrap}>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className={styles.inputGlass}
+                        placeholder="Enter your password"
+                        value={loginPassword}
+                        onChange={(e) => {
+                          setLoginPassword(e.target.value);
+                          setErrorMessage(null);
+                        }}
+                        required
+                        autoComplete="current-password"
+                      />
+                      <button
+                        type="button"
+                        className={styles.pwToggleIconBtn}
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="nimo-field">
-                  <label htmlFor="signin-pw" className="nimo-label">
-                    Password
-                  </label>
-                  <input
-                    id="signin-pw"
-                    type="password"
-                    className="nimo-input"
-                    placeholder="Enter your password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    disabled={loginLoading}
-                    autoComplete="current-password"
-                  />
-                </div>
-
+                {/* Continue with Account Button */}
                 <button
                   type="submit"
-                  className="nimo-submit-btn"
-                  disabled={loginLoading}
+                  className={styles.primaryPillButton}
+                  disabled={loading}
                 >
-                  {loginLoading ? "Signing in..." : "Continue with Account"}
+                  <span>{loading ? "Authenticating..." : "Continue with Account"}</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
-              </form>
 
-              <div className="nimo-card-footer">
-                <p>
-                  Don&apos;t have an account?{" "}
+                {/* Quick 1-Click Demo Login */}
+                <button
+                  type="button"
+                  className={styles.quickDemoBtn}
+                  onClick={handleDemoSignIn}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Instant Test: Mukul (Roll: 2024-CS-0284)</span>
+                </button>
+
+                {/* Switch to Sign Up */}
+                <div className={styles.footerSwitchRow}>
+                  <span>Don&apos;t have an account?</span>
                   <button
                     type="button"
-                    className="nimo-inline-link"
-                    onClick={handleSwitchToSignUp}
+                    className={styles.switchLinkBtn}
+                    onClick={() => {
+                      setErrorMessage(null);
+                      setSuccessMessage(null);
+                      setStep(1);
+                      setMode("signup");
+                    }}
                   >
                     Sign up
                   </button>
-                </p>
-              </div>
+                </div>
+
+                {/* Explore Campus Feed as Guest */}
+                <div style={{ textAlign: "center", marginTop: "14px" }}>
+                  <a
+                    href="/feed"
+                    style={{
+                      fontSize: "0.78rem",
+                      color: "#94a3b8",
+                      textDecoration: "underline",
+                      textUnderlineOffset: "3px",
+                      transition: "color 0.15s ease",
+                    }}
+                  >
+                    Or explore live campus feed as guest &rarr;
+                  </a>
+                </div>
+              </form>
             </div>
           )}
 
-          {/* ==================== SIGN UP FLOW (SHORT & ONE AFTER ANOTHER) ==================== */}
-          {mode === "signup" && (
-            <div className="flow-step-container">
-              {/* STEP 1: MOBILE VERIFICATION */}
-              {signupStep === 1 && (
-                <div>
-                  <div className="card-heading-group">
-                    <h1 className="card-title">Join nimo</h1>
-                    <p className="card-subtitle">Step 1 of 4 &middot; Mobile verification</p>
+          {/* ======================================================== */}
+          {/* VIEW: JOIN NIMO (3 STRICT STEPS)                         */}
+          {/* ======================================================== */}
+          {mode === "signup" && step < 4 && (
+            <div>
+              <div className={styles.cardHeader}>
+                <h1 className={styles.titlePrimary}>Join nimo</h1>
+
+                {/* 3 Step Progress Indicator */}
+                <div className={styles.progressIndicator}>
+                  <div className={styles.stepSegmentRow}>
+                    <div
+                      className={`${styles.stepSegment} ${
+                        step >= 1 ? (step === 1 ? styles.stepSegmentActive : styles.stepSegmentCompleted) : ""
+                      }`}
+                    />
+                    <div
+                      className={`${styles.stepSegment} ${
+                        step >= 2 ? (step === 2 ? styles.stepSegmentActive : styles.stepSegmentCompleted) : ""
+                      }`}
+                    />
+                    <div
+                      className={`${styles.stepSegment} ${
+                        step >= 3 ? styles.stepSegmentActive : ""
+                      }`}
+                    />
                   </div>
 
-                  <p className="nimo-sentence">
-                    Please enter your mobile phone number to receive a secure one-time verification code.
-                  </p>
+                  <div className={styles.stepBadgeText}>
+                    {step === 1 && (
+                      <span className={styles.stepBadgePill}>
+                        Step 1 of 3 &middot; Mobile verification
+                      </span>
+                    )}
+                    {step === 2 && (
+                      <span className={styles.stepBadgePill}>
+                        Step 2 of 3 &middot; Student Name &amp; Profile
+                      </span>
+                    )}
+                    {step === 3 && (
+                      <span className={styles.stepBadgePill}>
+                        Step 3 of 3 &middot; College ID Verification
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-                  <div className="nimo-form">
-                    <div className="nimo-field">
-                      <label htmlFor="signup-phone" className="nimo-label">
-                        Mobile phone number
+                <p className={styles.subtitleMuted}>
+                  {step === 1 &&
+                    "Please enter your mobile phone number to receive a secure one-time verification code."}
+                  {step === 2 &&
+                    "Enter your official student name and set your account password."}
+                  {step === 3 &&
+                    "Verify your college enrollment by entering your College ID and uploading your Student ID card."}
+                </p>
+              </div>
+
+              {/* ---------------- STEP 1: MOBILE VERIFICATION ---------------- */}
+              {step === 1 && (
+                <form onSubmit={handleStep1Submit}>
+                  <div className={styles.formGroup}>
+                    <div className={styles.fieldWrapper}>
+                      <label className={styles.fieldLabel}>
+                        <span>Mobile phone number</span>
+                        <span className={styles.fieldHint}>10 digits (India / Global)</span>
                       </label>
-                      <div className="nimo-input-action">
+                      <div className={styles.inputGlassWrap}>
                         <input
-                          id="signup-phone"
                           type="tel"
-                          className="nimo-input"
+                          className={`${styles.inputGlass} ${styles.inputGlassWithAction}`}
                           placeholder="e.g. 9876543210"
                           value={mobileNumber}
-                          onChange={(e) => setMobileNumber(e.target.value)}
-                          disabled={isMobileVerified}
+                          onChange={(e) => {
+                            setMobileNumber(e.target.value);
+                            setErrorMessage(null);
+                          }}
+                          required
                         />
                         <button
                           type="button"
-                          className="nimo-action-pill"
+                          className={styles.inputActionBtn}
                           onClick={handleSendOtp}
+                          disabled={resendTimer > 0}
                         >
-                          {otpSent ? "Resend" : "Send code"}
+                          {resendTimer > 0 ? `${resendTimer}s` : otpSent ? "Resend" : "Send code"}
                         </button>
                       </div>
                     </div>
 
+                    {/* OTP 6-Digit Section */}
                     {otpSent && (
-                      <div className="nimo-field animate-fadein">
-                        <label htmlFor="signup-otp-input" className="nimo-label">
-                          Verification code
-                        </label>
+                      <div className={styles.otpWrapper}>
+                        <div className={styles.otpRow}>
+                          {otpDigits.map((digit, i) => (
+                            <input
+                              key={i}
+                              ref={(el) => {
+                                otpInputRefs.current[i] = el;
+                              }}
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              value={digit}
+                              onChange={(e) => handleOtpDigitChange(i, e.target.value)}
+                              onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                              className={styles.otpInputBox}
+                              autoFocus={i === 0}
+                            />
+                          ))}
+                        </div>
+
+                        <div className={styles.otpHelperRow}>
+                          <span>Enter 6-digit OTP code</span>
+                          <button
+                            type="button"
+                            className={styles.quickFillDemoBtn}
+                            onClick={fillDemoOtp}
+                          >
+                            ⚡ Demo Code: 123456
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className={styles.primaryPillButton}
+                    disabled={loading}
+                  >
+                    <span>{otpSent ? "Verify & Continue" : "Continue with Mobile"}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <div className={styles.footerSwitchRow}>
+                    <span>Already have an account?</span>
+                    <button
+                      type="button"
+                      className={styles.switchLinkBtn}
+                      onClick={() => {
+                        setErrorMessage(null);
+                        setSuccessMessage(null);
+                        setMode("signin");
+                      }}
+                    >
+                      Log in
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* ---------------- STEP 2: STUDENT NAME & CREDENTIALS ---------------- */}
+              {step === 2 && (
+                <form onSubmit={handleStep2Submit}>
+                  <div className={styles.formGroup}>
+                    {/* Student Full Name */}
+                    <div className={styles.fieldWrapper}>
+                      <label className={styles.fieldLabel}>
+                        <span>Student Full Name</span>
+                        <span className={styles.fieldHint}>As on college register</span>
+                      </label>
+                      <div className={styles.inputGlassWrap}>
                         <input
-                          id="signup-otp-input"
                           type="text"
-                          maxLength={6}
-                          className="nimo-input"
-                          placeholder="Enter 6-digit code (use 123456)"
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                        />
-                        <span className="nimo-caption">
-                          A 6-digit code was sent. Use <strong>123456</strong> for instant verification.
-                        </span>
-                      </div>
-                    )}
-
-                    {otpSent ? (
-                      <button
-                        type="button"
-                        className="nimo-submit-btn"
-                        onClick={handleVerifyOtp}
-                      >
-                        Verify &amp; Continue
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="nimo-submit-btn"
-                        onClick={handleSendOtp}
-                      >
-                        Continue with Mobile
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="nimo-card-footer">
-                    <p>
-                      Already have an account?{" "}
-                      <button
-                        type="button"
-                        className="nimo-inline-link"
-                        onClick={handleSwitchToSignIn}
-                      >
-                        Log in
-                      </button>
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 2: UNIVERSITY ROLL NUMBER & STUDENT NAME */}
-              {signupStep === 2 && (
-                <div>
-                  <div className="card-heading-group">
-                    <h1 className="card-title">Student Information</h1>
-                    <p className="card-subtitle">Step 2 of 4 &middot; Academic details</p>
-                  </div>
-
-                  <p className="nimo-sentence">
-                    Please provide your official university roll number and full student name to connect your academic record.
-                  </p>
-
-                  <form onSubmit={handleProceedToId} className="nimo-form">
-                    <div className="nimo-field">
-                      <label htmlFor="signup-rollno" className="nimo-label">
-                        University Roll Number
-                      </label>
-                      <input
-                        id="signup-rollno"
-                        type="text"
-                        className="nimo-input"
-                        placeholder="e.g. 2024-CS-0412"
-                        value={rollNumber}
-                        onChange={(e) => setRollNumber(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <div className="nimo-field">
-                      <label htmlFor="signup-name" className="nimo-label">
-                        Full Student Name
-                      </label>
-                      <input
-                        id="signup-name"
-                        type="text"
-                        className="nimo-input"
-                        placeholder="e.g. Karan Sharma"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        required
-                      />
-                    </div>
-
-                    <button type="submit" className="nimo-submit-btn">
-                      Continue to ID Upload
-                    </button>
-                  </form>
-
-                  <div className="nimo-card-footer">
-                    <button
-                      type="button"
-                      className="nimo-back-link"
-                      onClick={() => setSignupStep(1)}
-                    >
-                      &larr; Back to mobile verification
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 3: UNIVERSITY ID CARD UPLOAD */}
-              {signupStep === 3 && (
-                <div>
-                  <div className="card-heading-group">
-                    <h1 className="card-title">Verify Student ID</h1>
-                    <p className="card-subtitle">Step 3 of 4 &middot; Identity verification</p>
-                  </div>
-
-                  <p className="nimo-sentence">
-                    Please upload a clear photograph or scanned copy of your official University Student ID Card for verification.
-                  </p>
-
-                  <div className="nimo-form">
-                    <label htmlFor="id-upload-input" className="nimo-upload-zone">
-                      <input
-                        id="id-upload-input"
-                        type="file"
-                        accept="image/png, image/jpeg, image/jpg, application/pdf"
-                        onChange={handleFileSelect}
-                        className="nimo-hidden-file"
-                      />
-                      {idFile ? (
-                        <div className="upload-file-info">
-                          <div className="upload-icon-success">&check;</div>
-                          <span className="upload-file-name">{idFile.name}</span>
-                          <span className="upload-file-size">
-                            {(idFile.size / 1024).toFixed(1)} KB &middot; Tap to replace
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="upload-placeholder">
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <polyline points="21 15 16 10 5 21" />
-                          </svg>
-                          <span className="upload-prompt">Click to select Student ID card</span>
-                          <span className="upload-types">Supports JPG, PNG, or PDF</span>
-                        </div>
-                      )}
-                    </label>
-
-                    {idPreviewUrl && (
-                      <div className="preview-container">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={idPreviewUrl}
-                          alt="Student ID Preview"
-                          className="nimo-thumbnail"
+                          className={styles.inputGlass}
+                          placeholder="e.g. Karan Singh"
+                          value={studentName}
+                          onChange={(e) => {
+                            setStudentName(e.target.value);
+                            setErrorMessage(null);
+                          }}
+                          required
+                          autoComplete="name"
                         />
                       </div>
-                    )}
+                    </div>
 
-                    <button
-                      type="button"
-                      className="nimo-submit-btn"
-                      onClick={handleProceedToPassword}
-                    >
-                      Continue to Password
-                    </button>
-                  </div>
-
-                  <div className="nimo-card-footer">
-                    <button
-                      type="button"
-                      className="nimo-back-link"
-                      onClick={() => setSignupStep(2)}
-                    >
-                      &larr; Back to student details
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 4: PASSWORD SETUP */}
-              {signupStep === 4 && (
-                <div>
-                  <div className="card-heading-group">
-                    <h1 className="card-title">Create Password</h1>
-                    <p className="card-subtitle">Step 4 of 4 &middot; Secure your account</p>
-                  </div>
-
-                  <p className="nimo-sentence">
-                    Please choose a secure password to protect your newly registered nimo student profile.
-                  </p>
-
-                  <form onSubmit={handleCompleteRegistration} className="nimo-form">
-                    <div className="nimo-field">
-                      <label htmlFor="signup-pwd" className="nimo-label">
-                        Account Password
+                    {/* Preferred Username */}
+                    <div className={styles.fieldWrapper}>
+                      <label className={styles.fieldLabel}>
+                        <span>Campus Username</span>
+                        <span className={styles.fieldHint}>Unique handle</span>
                       </label>
-                      <input
-                        id="signup-pwd"
-                        type="password"
-                        className="nimo-input"
-                        placeholder="At least 8 characters"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
+                      <div className={styles.inputGlassWrap}>
+                        <input
+                          type="text"
+                          className={styles.inputGlass}
+                          placeholder="e.g. karan_singh or rahul.cse"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                        />
+                      </div>
                     </div>
 
-                    <div className="nimo-field">
-                      <label htmlFor="signup-cpwd" className="nimo-label">
-                        Confirm Password
-                      </label>
-                      <input
-                        id="signup-cpwd"
-                        type="password"
-                        className="nimo-input"
-                        placeholder="Re-enter password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
+                    {/* Password */}
+                    <div className={styles.fieldWrapper}>
+                      <label className={styles.fieldLabel}>Password</label>
+                      <div className={styles.inputGlassWrap}>
+                        <input
+                          type={showSignupPassword ? "text" : "password"}
+                          className={styles.inputGlass}
+                          placeholder="Minimum 6 characters"
+                          value={signupPassword}
+                          onChange={(e) => setSignupPassword(e.target.value)}
+                          required
+                          autoComplete="new-password"
+                        />
+                        <button
+                          type="button"
+                          className={styles.pwToggleIconBtn}
+                          onClick={() => setShowSignupPassword(!showSignupPassword)}
+                        >
+                          {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="nimo-summary-card">
-                      <span className="summary-title">Summary:</span>
-                      <span className="summary-line">Phone: {mobileNumber}</span>
-                      <span className="summary-line">Roll No: {rollNumber}</span>
-                      <span className="summary-line">Name: {fullName}</span>
-                      <span className="summary-line">ID File: {idFile?.name}</span>
+                    {/* Confirm Password */}
+                    <div className={styles.fieldWrapper}>
+                      <label className={styles.fieldLabel}>Confirm Password</label>
+                      <div className={styles.inputGlassWrap}>
+                        <input
+                          type={showSignupPassword ? "text" : "password"}
+                          className={styles.inputGlass}
+                          placeholder="Re-enter password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          autoComplete="new-password"
+                        />
+                      </div>
                     </div>
-
-                    <button type="submit" className="nimo-submit-btn">
-                      Complete Registration
-                    </button>
-                  </form>
-
-                  <div className="nimo-card-footer">
-                    <button
-                      type="button"
-                      className="nimo-back-link"
-                      onClick={() => setSignupStep(3)}
-                    >
-                      &larr; Back to ID upload
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 5: REGISTRATION SUCCESS */}
-              {signupStep === 5 && (
-                <div className="success-view">
-                  <div className="success-icon-badge">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
                   </div>
 
-                  <h1 className="card-title">Welcome to nimo</h1>
-                  <p className="card-subtitle">Registration successfully completed</p>
-
-                  <p className="nimo-sentence" style={{ textAlign: "center" }}>
-                    Your student profile for <strong>{fullName}</strong> (Roll: {rollNumber}) has been submitted and verified.
-                  </p>
+                  <button
+                    type="submit"
+                    className={styles.primaryPillButton}
+                  >
+                    <span>Continue to College ID</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
 
                   <button
                     type="button"
-                    className="nimo-submit-btn"
-                    onClick={() => {
-                      router.push("/dashboard");
-                    }}
+                    className={styles.stepSubBackBtn}
+                    onClick={() => setStep(1)}
                   >
-                    Enter Campus Feed →
+                    &larr; Back to mobile verification
                   </button>
-                </div>
+                </form>
               )}
+
+              {/* ---------------- STEP 3: COLLEGE ID (FINAL STEP!) ---------------- */}
+              {step === 3 && (
+                <form onSubmit={handleStep3Submit}>
+                  <div className={styles.formGroup}>
+                    {/* College / University Name */}
+                    <div className={styles.fieldWrapper}>
+                      <label className={styles.fieldLabel}>College or University Name</label>
+                      <div className={styles.inputGlassWrap}>
+                        <input
+                          type="text"
+                          className={styles.inputGlass}
+                          placeholder="e.g. Aggarwal College, Ballabgarh"
+                          value={collegeName}
+                          onChange={(e) => setCollegeName(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      {/* Quick Chips */}
+                      <div className={styles.collegeChipsRow}>
+                        {POPULAR_COLLEGES.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            className={`${styles.collegeChip} ${
+                              collegeName === c ? styles.collegeChipActive : ""
+                            }`}
+                            onClick={() => setCollegeName(c)}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* College Roll Number / Student ID */}
+                    <div className={styles.fieldWrapper}>
+                      <label className={styles.fieldLabel}>
+                        <span>College ID / University Roll Number</span>
+                        <span className={styles.fieldHint}>Last verification step</span>
+                      </label>
+                      <div className={styles.inputGlassWrap}>
+                        <input
+                          type="text"
+                          className={styles.inputGlass}
+                          placeholder="e.g. 2024-CSE-0412 or 22001015"
+                          value={rollNumber}
+                          onChange={(e) => {
+                            setRollNumber(e.target.value);
+                            setErrorMessage(null);
+                          }}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* College Student ID Card Upload */}
+                    <div className={styles.fieldWrapper}>
+                      <label className={styles.fieldLabel}>
+                        <span>College Student ID Card</span>
+                        <span className={styles.fieldHint}>JPG, PNG, or PDF</span>
+                      </label>
+
+                      <label htmlFor="id-file-upload-input" className={styles.idUploadZone}>
+                        <input
+                          id="id-file-upload-input"
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={handleFileSelect}
+                          style={{ display: "none" }}
+                        />
+
+                        {idFile ? (
+                          <div className={styles.uploadedPreviewCard}>
+                            {idPreviewUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={idPreviewUrl}
+                                alt="ID Preview"
+                                className={styles.previewThumbImg}
+                              />
+                            ) : (
+                              <FileText className="w-8 h-8 text-emerald-400" />
+                            )}
+                            <div className={styles.uploadMetaCol}>
+                              <div className={styles.uploadFileName}>&check; {idFile.name}</div>
+                              <div className={styles.uploadFileNotice}>
+                                {(idFile.size / 1024).toFixed(1)} KB &middot; Tap to replace
+                              </div>
+                            </div>
+                          </div>
+                        ) : sampleIdUsed ? (
+                          <div className={styles.uploadedPreviewCard}>
+                            <ShieldCheck className="w-8 h-8 text-emerald-400" />
+                            <div className={styles.uploadMetaCol}>
+                              <div className={styles.uploadFileName}>&check; Sample College ID Card Attached</div>
+                              <div className={styles.uploadFileNotice}>Pre-verified for Aggarwal College</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className={styles.uploadIconPill}>
+                              <Upload className="w-5 h-5" />
+                            </div>
+                            <div className={styles.uploadTitleText}>
+                              Click or drop your College ID Card
+                            </div>
+                            <div className={styles.uploadSubtitleText}>
+                              Upload front side showing photo &amp; roll number
+                            </div>
+                            <button
+                              type="button"
+                              className={styles.sampleIdQuickBtn}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                useSampleStudentId();
+                              }}
+                            >
+                              <Sparkles className="w-3 h-3 text-sky-400" />
+                              <span>Use Verified Sample ID</span>
+                            </button>
+                          </>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className={styles.primaryPillButton}
+                    disabled={loading}
+                  >
+                    <span>{loading ? "Verifying College ID..." : "Complete Registration & Access Campus"}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.stepSubBackBtn}
+                    onClick={() => setStep(2)}
+                  >
+                    &larr; Back to student details
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* ======================================================== */}
+          {/* VIEW: CELEBRATION / VERIFIED BADGE                       */}
+          {/* ======================================================== */}
+          {mode === "signup" && step === 4 && (
+            <div className={styles.successCard}>
+              <div className={styles.verifiedBadgeCircle}>
+                <ShieldCheck className="w-8 h-8" />
+              </div>
+
+              <div>
+                <h2 className={styles.titlePrimary} style={{ fontSize: "1.75rem" }}>
+                  Verification Complete!
+                </h2>
+                <p className={styles.subtitleMuted}>
+                  Welcome to <strong>{collegeName}</strong> on Nimo. Your student identity has been cryptographically confirmed.
+                </p>
+              </div>
+
+              <div className={styles.studentIdSummaryCard}>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Student Name</span>
+                  <span className={styles.summaryValue}>{studentName}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Roll Number</span>
+                  <span className={styles.summaryValue}>{rollNumber}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>College</span>
+                  <span className={styles.summaryValue}>{collegeName}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span className={styles.summaryLabel}>Campus Status</span>
+                  <span className={styles.summaryValue} style={{ color: "#34d399" }}>
+                    &bull; Active &amp; Verified
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className={styles.primaryPillButton}
+                onClick={() => {
+                  if (onSuccess) {
+                    onSuccess();
+                  } else {
+                    router.push("/feed");
+                  }
+                }}
+              >
+                <span>Enter Campus Homepage &amp; Feed</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           )}
         </div>
       </main>
 
-      {/* Support Dialog Modal */}
-      {supportOpen && (
-        <div className="nimo-modal-backdrop" onClick={() => setSupportOpen(false)}>
-          <div className="nimo-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="card-heading-group">
-              <h2 className="card-title" style={{ fontSize: "1.3rem" }}>nimo Support</h2>
-              <p className="card-subtitle">We are here to assist with your university onboarding</p>
-            </div>
-            <p className="nimo-sentence">
-              For any help with mobile verification, roll number authentication, or ID document review, please reach out to our dedicated campus helpdesk at:
-            </p>
-            <p className="support-email">support@nimo.edu</p>
+      {/* ==================== CONTACT SUPPORT MODAL ==================== */}
+      {isSupportOpen && (
+        <div className={styles.modalBackdrop} onClick={() => setIsSupportOpen(false)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
-              className="nimo-submit-btn"
-              onClick={() => setSupportOpen(false)}
+              className={styles.modalCloseBtn}
+              onClick={() => setIsSupportOpen(false)}
             >
-              Close
+              <X className="w-4 h-4" />
+            </button>
+
+            <h3 className={styles.modalTitle}>Nimo Student Support</h3>
+            <p className={styles.modalDesc}>
+              Need assistance with your student ID verification or mobile login? Our campus desk is online.
+            </p>
+
+            <div className={styles.supportItem}>
+              <Mail className={styles.supportIcon} />
+              <div>
+                <strong className="text-sm block text-white">Student Desk Email</strong>
+                <span className="text-xs text-slate-400">verification@nimo.campus (Replies in 15 mins)</span>
+              </div>
+            </div>
+
+            <div className={styles.supportItem}>
+              <MessageCircle className={styles.supportIcon} />
+              <div>
+                <strong className="text-sm block text-white">Faridabad Campus WhatsApp Desk</strong>
+                <span className="text-xs text-slate-400">+91 98765-CAMPUS (Instant verification help)</span>
+              </div>
+            </div>
+
+            <div className={styles.supportItem}>
+              <ShieldCheck className={styles.supportIcon} />
+              <div>
+                <strong className="text-sm block text-white">ID Verification Notice</strong>
+                <span className="text-xs text-slate-400">
+                  All Aggarwal College &amp; YMCA IDs are auto-validated against the 2026 semester register.
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className={styles.primaryPillButton}
+              style={{ marginTop: "16px", marginBottom: "0" }}
+              onClick={() => setIsSupportOpen(false)}
+            >
+              Close Support
             </button>
           </div>
         </div>

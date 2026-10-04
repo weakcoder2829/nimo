@@ -3,13 +3,23 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { FeedPost } from "./CampusFeedPreview";
+import {
+  Send,
+  ShieldCheck,
+  Sparkles,
+  MapPin,
+  Lock,
+  ArrowRight,
+  AlertCircle,
+  Check,
+} from "lucide-react";
 
 interface ConfessionComposerProps {
   onPostCreated: (newPost: FeedPost) => void;
   isLoggedIn?: boolean;
 }
 
-const MONO_AVATARS = [
+const CLAY_AVATARS = [
   { icon: "🦊", name: "Anonymous Fox" },
   { icon: "🦉", name: "Anonymous Owl" },
   { icon: "🦎", name: "Anonymous Chameleon" },
@@ -18,14 +28,12 @@ const MONO_AVATARS = [
 ];
 
 const FARIDABAD_CAMPUS_LOCATIONS = [
+  "Aggarwal College - Central Lawn",
+  "Aggarwal College - Canteen Area",
   "JC Bose UST (YMCA) - Central Library",
-  "JC Bose UST (YMCA) - College Canteen",
-  "Manav Rachna (MRIIRS) - Campus Lawn",
-  "Manav Rachna (MRU) - T-Block",
-  "Lingaya's Vidyapeeth - CS Department",
+  "Manav Rachna (MRIIRS) - Campus Quad",
+  "Faridabad College - Sector 2 Hub",
   "Sector 15 Market - Student Adda",
-  "Faridabad College Hostel Wing",
-  "Bata Chowk Metro / NH-19",
 ];
 
 export default function ConfessionComposer({
@@ -44,7 +52,6 @@ export default function ConfessionComposer({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // User requirement: "to speak you need make acoount"
     if (!isLoggedIn) {
       setShowAuthGate(true);
       return;
@@ -52,14 +59,14 @@ export default function ConfessionComposer({
 
     if (!content.trim()) return;
 
-    const chosenAvatar = MONO_AVATARS[selectedAvatarIdx];
+    const chosenAvatar = CLAY_AVATARS[selectedAvatarIdx];
 
     const newPost: FeedPost = {
       id: `post-${Date.now()}`,
       avatarIcon: chosenAvatar.icon,
-      avatarBg: "#f4f4f5",
+      avatarBg: "#f1f5f9",
       authorLabel: chosenAvatar.name,
-      location: `${selectedLocation} • Just now`,
+      location: `${selectedLocation} &bull; Just now`,
       timeAgo: "Just now",
       category: selectedCategory,
       content: content.trim(),
@@ -77,162 +84,214 @@ export default function ConfessionComposer({
     }, 4000);
   };
 
+  const categories = [
+    { id: "confession", label: "🤫 Confession" },
+    { id: "overheard", label: "👂 Overheard" },
+    { id: "hot", label: "🔥 Hot Take" },
+    { id: "exams", label: "📚 Exams & Viva" },
+    { id: "hostel", label: "🏢 Hostel & Mess" },
+  ];
+
   return (
-    <section id="confessions-section" className="composer-section">
-      <div className="section-container">
-        <div className="composer-grid">
-          {/* Left Column: Heading & Guidelines */}
-          <div className="composer-info">
-            <div className="section-badge-bw">CONFESSION POST BOX</div>
-            <h2 className="composer-heading">
-              Have something on your chest? Speak freely?
+    <section id="confessions-section" className="w-full py-12 md:py-20 px-4 sm:px-6 relative">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Guidelines & Pitch */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-heading font-bold bg-primary/10 text-primary border border-primary/20">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span>CONFESSION POST BOX</span>
+            </div>
+
+            <h2 className="font-heading font-black text-3xl sm:text-4xl text-foreground tracking-tight leading-tight">
+              Have something on your chest? Speak freely.
             </h2>
-            <p className="composer-description">
-              No profiles. No usernames. No handles. Share your college thoughts, exam rants, canteen reviews, or secrets with fellow Faridabad students.
+
+            <p className="font-body text-base text-muted-foreground leading-relaxed">
+              No profiles. No usernames. No handles. Share your thoughts, canteen gossip, exam rants, or secrets with fellow Faridabad students.
             </p>
 
-            {/* Account requirement banner */}
-            <div className="account-required-banner">
-              <div className="banner-title-row">
-                <span className="banner-bullet">●</span>
-                <strong>Account required to speak</strong>
+            {/* Account required notice */}
+            <div className="clay-card p-5 space-y-3">
+              <div className="flex items-center gap-2 font-heading font-bold text-sm text-foreground">
+                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>Account Required to Speak</span>
               </div>
-              <p className="banner-desc">
-                To prevent outside spam and harassment, you must have an active student account to post confessions. Your posts are never attached to your identity.
+              <p className="text-xs text-muted-foreground font-body leading-relaxed">
+                To prevent outside spam and harassment, you must have an active student account to post confessions. Your posts remain 100% anonymous.
               </p>
-              <div className="banner-action-row">
-                <Link href="/signup" className="btn-small-black">
-                  Sign Up to Speak
+              <div className="flex items-center gap-2.5 pt-1">
+                <Link
+                  href="/signup"
+                  className="clay-button-primary px-3.5 py-1.5 text-xs font-heading font-bold"
+                >
+                  <span>Sign Up to Speak</span>
+                  <ArrowRight className="w-3 h-3" />
                 </Link>
-                <Link href="/login" className="btn-small-outline">
+                <Link
+                  href="/login"
+                  className="clay-button-secondary px-3.5 py-1.5 text-xs font-heading font-bold"
+                >
                   Log In
                 </Link>
               </div>
             </div>
 
-            <div className="composer-features-list">
-              <div className="feature-bullet">
-                <div className="bullet-num">01</div>
+            <div className="space-y-3 pt-2">
+              <div className="flex items-start gap-3">
+                <span className="clay-avatar w-7 h-7 text-xs font-bold shrink-0">1</span>
                 <div>
-                  <h4>100% Anonymous Identity</h4>
-                  <p>Your post is never linked to your name or university roll number.</p>
+                  <h4 className="font-heading font-bold text-sm text-foreground">100% Anonymous Identity</h4>
+                  <p className="text-xs text-muted-foreground font-body">Never tied to your real name or university roll number.</p>
                 </div>
               </div>
-              <div className="feature-bullet">
-                <div className="bullet-num">02</div>
+              <div className="flex items-start gap-3">
+                <span className="clay-avatar w-7 h-7 text-xs font-bold shrink-0">2</span>
                 <div>
-                  <h4>Faridabad Colleges Community</h4>
-                  <p>Read and comment with students across JC Bose YMCA, Manav Rachna, and nearby colleges.</p>
+                  <h4 className="font-heading font-bold text-sm text-foreground">Faridabad Campus Radar</h4>
+                  <p className="text-xs text-muted-foreground font-body">Connects Aggarwal College, YMCA, Manav Rachna & neighboring colleges.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Confession Form Card */}
-          <div className="composer-card">
-            <div className="composer-card-header">
-              <div className="composer-active-avatar">
-                <div className="avatar-bubble-bw">
-                  {MONO_AVATARS[selectedAvatarIdx].icon}
+          {/* Right Column: 3D Clay Confession Composer Card */}
+          <div className="lg:col-span-7">
+            <div className="clay-card p-6 sm:p-8 space-y-6">
+              {/* Header: Persona Avatar Selector */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <div className="clay-avatar w-12 h-12 text-2xl shrink-0">
+                    <span>{CLAY_AVATARS[selectedAvatarIdx].icon}</span>
+                  </div>
+                  <div>
+                    <div className="font-heading font-bold text-sm text-foreground">
+                      {CLAY_AVATARS[selectedAvatarIdx].name}
+                    </div>
+                    <div className="text-xs text-muted-foreground font-heading">
+                      Select your anonymous guise
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <span className="avatar-title">{MONO_AVATARS[selectedAvatarIdx].name}</span>
-                  <span className="avatar-status-bw">Account required to post</span>
-                </div>
-              </div>
 
-              {/* Avatar Selector */}
-              <div className="avatar-picker">
-                {MONO_AVATARS.map((av, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    className={`avatar-choice-btn ${selectedAvatarIdx === idx ? "active" : ""}`}
-                    onClick={() => setSelectedAvatarIdx(idx)}
-                    title={`Switch avatar`}
-                  >
-                    {av.icon}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {postedSuccess && (
-              <div className="composer-alert-success">
-                ✓ Your anonymous confession is now live on the feed!
-              </div>
-            )}
-
-            {showAuthGate && (
-              <div className="composer-auth-gate-alert">
-                <div className="auth-gate-header">
-                  <strong>⚠️ Account Required to Speak</strong>
-                  <button
-                    type="button"
-                    className="close-gate-btn"
-                    onClick={() => setShowAuthGate(false)}
-                  >
-                    ✕
-                  </button>
-                </div>
-                <p>
-                  To protect our Faridabad campus community, you must create a verified student account before posting confessions.
-                </p>
-                <div className="auth-gate-buttons">
-                  <Link href="/signup" className="btn-black-small">
-                    Create Account
-                  </Link>
-                  <Link href="/login" className="btn-outline-small">
-                    Log In
-                  </Link>
+                {/* Avatar Picker Pills */}
+                <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-muted/50 border border-border/40">
+                  {CLAY_AVATARS.map((av, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedAvatarIdx(idx)}
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg transition-transform ${
+                        selectedAvatarIdx === idx
+                          ? "clay-button-secondary scale-110 border-primary"
+                          : "opacity-60 hover:opacity-100 hover:scale-105"
+                      }`}
+                      title={av.name}
+                    >
+                      {av.icon}
+                    </button>
+                  ))}
                 </div>
               </div>
-            )}
 
-            <form onSubmit={handleSubmit} className="composer-form">
-              <div className="textarea-wrapper">
-                <textarea
-                  className="composer-textarea"
-                  rows={4}
-                  maxLength={300}
-                  placeholder="Drop your anonymous college confession, canteen review, lecture tea, or hostel thought (account required to post)..."
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  onClick={() => {
-                    if (!isLoggedIn) setShowAuthGate(true);
-                  }}
-                  required
-                />
-                <div className="char-counter">{300 - content.length} chars left</div>
-              </div>
+              {/* Success Notification */}
+              {postedSuccess && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-heading font-bold flex items-center gap-2 animate-in fade-in">
+                  <Check className="w-4 h-4" />
+                  <span>Your anonymous confession has been posted to the campus feed!</span>
+                </div>
+              )}
 
-              {/* Tag & Location pickers */}
-              <div className="composer-options-row">
-                <div className="option-group">
-                  <label className="option-label">Category</label>
+              {/* Auth Gate Warning */}
+              {showAuthGate && (
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-foreground space-y-2.5 animate-in fade-in">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-heading font-bold">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>Account Required to Speak</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAuthGate(false)}
+                      className="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground font-body">
+                    To maintain our trusted student space, please verify your college status or sign in before dropping confessions.
+                  </p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <Link
+                      href="/signup"
+                      className="clay-button-primary px-3 py-1.5 text-xs font-bold"
+                    >
+                      Create Student Account
+                    </Link>
+                    <Link
+                      href="/login"
+                      className="clay-button-secondary px-3 py-1.5 text-xs font-bold"
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* Confession Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Tactile Inset Textarea */}
+                <div className="clay-textarea-box space-y-2">
+                  <textarea
+                    rows={4}
+                    maxLength={300}
+                    placeholder="Drop your anonymous college confession, canteen review, lecture tea, or hostel thought (account required to post)..."
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    onClick={() => {
+                      if (!isLoggedIn) setShowAuthGate(true);
+                    }}
+                    className="w-full bg-transparent resize-none border-none outline-none font-body text-base text-foreground placeholder:text-muted-foreground/60 leading-relaxed"
+                    required
+                  />
+                  <div className="flex items-center justify-between text-xs text-muted-foreground font-heading pt-1 border-t border-border/30">
+                    <span>100% Anonymous &bull; Encrypted</span>
+                    <span className="font-mono">{300 - content.length} chars left</span>
+                  </div>
+                </div>
+
+                {/* Category Pills (Clay) */}
+                <div className="space-y-2">
+                  <label className="text-xs font-heading font-bold text-muted-foreground">
+                    Choose Topic Category:
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setSelectedCategory(cat.id as any)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-heading font-bold transition-all ${
+                          selectedCategory === cat.id
+                            ? "clay-button-primary text-white"
+                            : "clay-button-secondary text-muted-foreground"
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Campus Pin Dropdown */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-xs font-heading font-bold text-muted-foreground">
+                    Campus Location Radar:
+                  </label>
                   <select
-                    className="option-select"
-                    value={selectedCategory}
-                    onChange={(e) =>
-                      setSelectedCategory(
-                        e.target.value as "confession" | "overheard" | "hot" | "exams" | "hostel"
-                      )
-                    }
-                  >
-                    <option value="confession">Confession</option>
-                    <option value="overheard">Overheard</option>
-                    <option value="exams">Exams & Viva</option>
-                    <option value="hostel">Hostel & Food</option>
-                    <option value="hot">Hot Take</option>
-                  </select>
-                </div>
-
-                <div className="option-group">
-                  <label className="option-label">Campus / College Pin</label>
-                  <select
-                    className="option-select"
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
+                    className="w-full h-11 px-3.5 rounded-2xl bg-muted/50 border border-border/80 text-xs font-heading font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
                   >
                     {FARIDABAD_CAMPUS_LOCATIONS.map((loc, idx) => (
                       <option key={idx} value={loc}>
@@ -241,25 +300,23 @@ export default function ConfessionComposer({
                     ))}
                   </select>
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div className="composer-actions">
-                <div className="composer-note-bw">
-                  Students only • 100% Anonymous
+                {/* Post Action */}
+                <div className="pt-2 flex items-center justify-between">
+                  <div className="text-xs text-muted-foreground font-heading hidden sm:block">
+                    Verified Faridabad student radar
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="clay-button-primary px-6 py-3 text-sm font-heading font-black rounded-2xl w-full sm:w-auto"
+                  >
+                    <span>Post Anonymously</span>
+                    <Send className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  className="btn-post-confession"
-                >
-                  <span>Post Anonymously</span>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                  </svg>
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       </div>

@@ -1,109 +1,77 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import NimoSplash from "@/components/NimoSplash";
-import LandingNavbar from "@/components/LandingNavbar";
-import CampusFeedPreview, { FeedPost, INITIAL_POSTS } from "@/components/CampusFeedPreview";
-import HowItWorksSection from "@/components/HowItWorksSection";
-import ConfessionComposer from "@/components/ConfessionComposer";
-import AppDownloadCleanSection from "@/components/AppDownloadCleanSection";
-import AntiBullyingSection from "@/components/AntiBullyingSection";
-import LandingFooter from "@/components/LandingFooter";
+import DesktopLandingPage from "@/components/DesktopLandingPage";
+import NimoAuth from "@/components/NimoAuth";
+import { useAuth } from "@/lib/authContext";
 
-export default function Home() {
-  // Splash screen state (shows "nimo" on pure white background for 2 sec, then fades out)
+/**
+ * Root Application Entry:
+ * 1. "nimo" comes first (minimalist entrance splash).
+ * 2. After nimo:
+ *    - PC (screen >= 768px): Shows the Desktop Landing Page with links to Sign Up, Sign In, and Feed.
+ *    - Mobile (screen < 768px): NO landing page! Direct to Sign In / Sign Up (or Feed if already authenticated).
+ * 3. Responsive, minimal, and state-of-the-art aesthetics.
+ */
+export default function RootPage() {
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [splashFinished, setSplashFinished] = useState(false);
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
 
-  // Shared posts state between ConfessionComposer and CampusFeedPreview
-  const [feedPosts, setFeedPosts] = useState<FeedPost[]>(INITIAL_POSTS);
+  // Detect screen size on client mount and resize
+  useEffect(() => {
+    const checkViewport = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
 
-  const handleNewPost = (newPost: FeedPost) => {
-    setFeedPosts((prev) => [newPost, ...prev]);
-  };
+    checkViewport();
+    window.addEventListener("resize", checkViewport);
+    return () => window.removeEventListener("resize", checkViewport);
+  }, []);
 
-  const scrollToSection = (sectionId: string) => {
-    const el = document.getElementById(sectionId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
+  // When splash finishes, if user is already authenticated on mobile, send straight to /feed
+  useEffect(() => {
+    if (splashFinished && isDesktop === false && isAuthenticated && user) {
+      router.replace("/feed");
     }
-  };
+  }, [splashFinished, isDesktop, isAuthenticated, user, router]);
 
   return (
-    <div className="landing-root-bw">
-      {/* 2-Second Minimal White Intro Splash Screen */}
+    <main className="w-full min-h-screen bg-background text-foreground relative">
+      {/* ========================================================================= */}
+      {/* 1. NIMO COMES FIRST: Ultra-clean minimal entrance                         */}
+      {/* ========================================================================= */}
       <NimoSplash
-        durationMs={2000}
+        durationMs={1800}
         onFinish={() => setSplashFinished(true)}
       />
 
-      {/* Main Single-Page Landing in Strict Black and White */}
-      <div className={`landing-main-shell ${splashFinished ? "landing-revealed" : ""}`}>
-        {/* Navigation Bar with Brand, Section Links and Direct Links to /login and /signup */}
-        <LandingNavbar onScrollToSection={scrollToSection} />
-
-        {/* 1. HERO SECTION */}
-        <section className="hero-section-bw">
-          <div className="section-container hero-container">
-            <div className="section-badge-bw">
-              FARIDABAD COLLEGES • ANONYMOUS TEXT FEED
-            </div>
-
-            <h1 className="hero-title-bw">
-              What’s really happening on campus{" "}
-              <span className="hero-serif-accent-bw">right now.</span>
-            </h1>
-
-            <p className="hero-subtitle-bw">
-              The unfiltered anonymous text comment section for Faridabad college students.
-              Drop confessions, lecture updates, canteen reviews, and hostel thoughts — 100% anonymous.
-            </p>
-
-            {/* Exactly 2 buttons: Explore Live Feed & Post Confession */}
-            <div className="hero-cta-group">
-              <button
-                type="button"
-                className="btn-hero-primary-bw"
-                onClick={() => scrollToSection("live-feed")}
-              >
-                <span>Explore Live Feed</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <polyline points="19 12 12 19 5 12"></polyline>
-                </svg>
-              </button>
-
-              <button
-                type="button"
-                className="btn-hero-secondary-bw"
-                onClick={() => scrollToSection("confessions-section")}
-              >
-                <span>Post Confession</span>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* 2. FEED SECTION */}
-        <CampusFeedPreview externalPosts={feedPosts} />
-
-        {/* 3. HOW IT WORKS SECTION */}
-        <HowItWorksSection />
-
-        {/* 4. POST BOX SECTION (ACCOUNT REQUIRED TO SPEAK) */}
-        <ConfessionComposer
-          onPostCreated={handleNewPost}
-          isLoggedIn={false}
-        />
-
-        {/* 5. DOWNLOAD APP SECTION (DIRECT APK & QR - NO GOOGLE PLAY) */}
-        <AppDownloadCleanSection />
-
-        {/* 6. COMMUNITY RULES & ANTI-CYBERBULLYING SECTION */}
-        <AntiBullyingSection />
-
-        {/* 7. CLEAN MONOCHROME FOOTER */}
-        <LandingFooter onScrollToSection={scrollToSection} />
+      {/* ========================================================================= */}
+      {/* 2. PC EXPERIENCE (Screen >= 768px): Desktop Landing Page ONLY             */}
+      {/* ========================================================================= */}
+      <div className="hidden md:block w-full min-h-screen">
+        <DesktopLandingPage />
       </div>
-    </div>
+
+      {/* ========================================================================= */}
+      {/* 3. MOBILE EXPERIENCE (Screen < 768px): NO LANDING PAGE!                   */}
+      {/* Direct to Sign Up / Sign In Auth (or Campus Feed if authenticated)        */}
+      {/* ========================================================================= */}
+      <div className="block md:hidden w-full min-h-screen">
+        {!isAuthenticated || !user ? (
+          <NimoAuth initialMode="signin" />
+        ) : (
+          <div className="min-h-screen bg-[#080c14] text-white flex flex-col items-center justify-center p-6 text-center space-y-4">
+            <div className="w-10 h-10 rounded-full border-2 border-sky-400 border-t-transparent animate-spin" />
+            <p className="text-xs text-slate-400 font-sans tracking-wide">
+              Entering campus feed...
+            </p>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

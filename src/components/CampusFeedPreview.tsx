@@ -2,6 +2,17 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import {
+  ArrowBigUp,
+  ArrowBigDown,
+  MessageCircle,
+  Flame,
+  ArrowRight,
+  Sparkles,
+  MapPin,
+  Clock,
+  Send,
+} from "lucide-react";
 
 export interface FeedPost {
   id: string;
@@ -24,13 +35,13 @@ export interface FeedPost {
   }>;
 }
 
-export const INITIAL_POSTS: FeedPost[] = [
+export const INITIAL_FEED_POSTS: FeedPost[] = [
   {
     id: "post-1",
     avatarIcon: "🦊",
-    avatarBg: "#f4f4f5",
+    avatarBg: "#f1f5f9",
     authorLabel: "Anonymous YMCAian",
-    location: "JC Bose UST (YMCA) • Library 2nd Floor",
+    location: "JC Bose UST (YMCA) &bull; Library 2nd Floor",
     timeAgo: "5m ago",
     category: "confession",
     content:
@@ -51,13 +62,13 @@ export const INITIAL_POSTS: FeedPost[] = [
   {
     id: "post-2",
     avatarIcon: "🦎",
-    avatarBg: "#f4f4f5",
-    authorLabel: "Anonymous Student",
-    location: "Manav Rachna (MRIIRS) • Campus Lawn",
+    avatarBg: "#f1f5f9",
+    authorLabel: "Aggarwal Student",
+    location: "Aggarwal College &bull; Block B Lawn",
     timeAgo: "18m ago",
     category: "overheard",
     content:
-      "Overheard near Block T: 'Bhai attendance 74.8% hai, prof keh rahe hain ek period extra attend karo tabhi admit card milega.' Peak semester panic mode has begun.",
+      "Overheard near Canteen: 'Bhai attendance 74.8% hai, prof keh rahe hain ek period extra attend karo tabhi admit card milega.' Peak semester panic mode has officially begun.",
     upvotes: 62,
     commentsCount: 9,
     userVote: null,
@@ -74,9 +85,9 @@ export const INITIAL_POSTS: FeedPost[] = [
   {
     id: "post-3",
     avatarIcon: "🐼",
-    avatarBg: "#f4f4f5",
-    authorLabel: "Anonymous Hostel Resident",
-    location: "Faridabad College Hostel • Block B",
+    avatarBg: "#f1f5f9",
+    authorLabel: "Anonymous Hostelite",
+    location: "Faridabad Hostel Wing &bull; Block C",
     timeAgo: "42m ago",
     category: "hostel",
     content:
@@ -97,320 +108,272 @@ export const INITIAL_POSTS: FeedPost[] = [
   {
     id: "post-4",
     avatarIcon: "🦉",
-    avatarBg: "#f4f4f5",
-    authorLabel: "Anonymous Scholar",
-    location: "Lingaya's Vidyapeeth • CS Lab",
+    avatarBg: "#f1f5f9",
+    authorLabel: "MRIIRS Scholar",
+    location: "Manav Rachna (MRIIRS) &bull; Central Audi",
     timeAgo: "1h ago",
-    category: "exams",
-    content:
-      "Lab external asked me the difference between SQL and NoSQL and I accidentally started explaining the plot of Oppenheimer. Still got full marks for confidence.",
-    upvotes: 91,
-    commentsCount: 11,
-    userVote: null,
-    comments: [
-      {
-        id: "c-4",
-        avatarIcon: "🦊",
-        text: "Legendary move. Confidence is 90% of viva.",
-        timeAgo: "40m ago",
-        upvotes: 27,
-      },
-    ],
-  },
-  {
-    id: "post-5",
-    avatarIcon: "🦥",
-    avatarBg: "#f4f4f5",
-    authorLabel: "Anonymous Commuter",
-    location: "Bata Chowk Metro • Faridabad",
-    timeAgo: "2h ago",
     category: "confession",
     content:
-      "Sprint kiya Bata Chowk metro stairs pe 8:50 AM pe taaki 9 AM lecture miss na ho, only to reach college and see 'Class cancelled due to department meeting' message on WhatsApp.",
-    upvotes: 74,
-    commentsCount: 8,
+      "Accidentally replied 'Love you too' to my project guide on WhatsApp instead of 'Noted sir'. He just replied '👍'. Currently planning which Himalayan cave to relocate to.",
+    upvotes: 89,
+    commentsCount: 14,
     userVote: null,
-    comments: [
-      {
-        id: "c-5",
-        avatarIcon: "🐼",
-        text: "The universal Faridabad student pain.",
-        timeAgo: "1h ago",
-        upvotes: 21,
-      },
-    ],
+    comments: [],
   },
 ];
 
-interface CampusFeedPreviewProps {
-  externalPosts?: FeedPost[];
-}
-
-export default function CampusFeedPreview({
-  externalPosts,
-}: CampusFeedPreviewProps) {
-  const [posts, setPosts] = useState<FeedPost[]>(externalPosts || INITIAL_POSTS);
-  const [activeFilter, setActiveFilter] = useState<string>("all");
-  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({
-    "post-1": true,
-  });
-  const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
-  const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (externalPosts) {
-      setPosts(externalPosts);
-    }
-  }, [externalPosts]);
+export default function CampusFeedPreview() {
+  const [posts, setPosts] = useState<FeedPost[]>(INITIAL_FEED_POSTS);
+  const [filter, setFilter] = useState<string>("all");
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
 
   const handleVote = (id: string, type: "up" | "down") => {
     setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== id) return post;
-
-        let delta = 0;
-        let newVote: "up" | "down" | null = type;
-
-        if (post.userVote === type) {
-          delta = type === "up" ? -1 : 1;
-          newVote = null;
-        } else if (post.userVote === null) {
-          delta = type === "up" ? 1 : -1;
-          newVote = type;
-        } else {
-          delta = type === "up" ? 2 : -2;
-          newVote = type;
+      prev.map((p) => {
+        if (p.id !== id) return p;
+        if (p.userVote === type) {
+          // toggle off
+          return {
+            ...p,
+            userVote: null,
+            upvotes: type === "up" ? p.upvotes - 1 : p.upvotes + 1,
+          };
         }
-
+        const delta = type === "up" ? (p.userVote === "down" ? 2 : 1) : p.userVote === "up" ? -2 : -1;
         return {
-          ...post,
-          upvotes: post.upvotes + delta,
-          userVote: newVote,
+          ...p,
+          userVote: type,
+          upvotes: p.upvotes + delta,
         };
       })
     );
   };
 
   const toggleComments = (id: string) => {
-    setExpandedComments((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    setExpandedComments((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleAddReply = (postId: string) => {
-    const text = replyInputs[postId]?.trim();
+  const handleAddComment = (postId: string) => {
+    const text = (commentDrafts[postId] || "").trim();
     if (!text) return;
 
     setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-        const newComment = {
-          id: `c-user-${Date.now()}`,
-          avatarIcon: "●",
-          text,
-          timeAgo: "Just now",
-          upvotes: 1,
-        };
+      prev.map((p) => {
+        if (p.id !== postId) return p;
         return {
-          ...post,
-          commentsCount: post.commentsCount + 1,
-          comments: [...post.comments, newComment],
+          ...p,
+          commentsCount: p.commentsCount + 1,
+          comments: [
+            ...p.comments,
+            {
+              id: `c-${Date.now()}`,
+              avatarIcon: "🦊",
+              text,
+              timeAgo: "Just now",
+              upvotes: 1,
+            },
+          ],
         };
       })
     );
 
-    setReplyInputs((prev) => ({ ...prev, [postId]: "" }));
-    setExpandedComments((prev) => ({ ...prev, [postId]: true }));
+    setCommentDrafts((prev) => ({ ...prev, [postId]: "" }));
   };
 
-  const handleShare = (postId: string) => {
-    setCopiedPostId(postId);
-    navigator.clipboard?.writeText(window.location.href);
-    setTimeout(() => {
-      setCopiedPostId(null);
-    }, 2000);
-  };
-
-  const filteredPosts = posts.filter((post) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "hot") return post.upvotes > 50;
-    return post.category === activeFilter;
+  const filteredPosts = posts.filter((p) => {
+    if (filter === "all") return true;
+    return p.category === filter;
   });
 
+  const filterTabs = [
+    { id: "all", label: "🔥 All Live Yaks" },
+    { id: "confession", label: "🤫 Confessions" },
+    { id: "overheard", label: "👂 Overheard" },
+    { id: "hostel", label: "🏢 Hostel & Mess" },
+  ];
+
   return (
-    <section id="live-feed" className="feed-section">
-      <div className="section-container">
+    <section id="live-feed" className="w-full py-12 md:py-20 px-4 sm:px-6 relative">
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Section Header */}
-        <div className="section-header-clean">
-          <div className="section-badge-bw">FARIDABAD CAMPUS STREAM</div>
-          <h2 className="section-title">What students are whispering right now</h2>
-          <p className="section-subtitle">
-            Local comments, campus gossip, and honest confessions from students in Faridabad colleges. 100% anonymous.
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-heading font-bold bg-primary/10 text-primary border border-primary/20">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>REAL-TIME CAMPUS RADAR</span>
+          </div>
+
+          <h2 className="font-heading font-black text-3xl sm:text-4xl text-foreground tracking-tight">
+            Live from Faridabad Colleges
+          </h2>
+
+          <p className="font-body text-sm sm:text-base text-muted-foreground max-w-xl mx-auto">
+            Unfiltered thoughts, cafeteria reviews, and anonymous confessions from students right near you.
           </p>
         </div>
 
-        {/* Filter Pills in Black and White */}
-        <div className="filter-scroll-container">
-          <div className="filter-pill-bar">
-            {[
-              { id: "all", label: "All Posts" },
-              { id: "hot", label: "Top Upvoted" },
-              { id: "confession", label: "Confessions" },
-              { id: "overheard", label: "Overheard" },
-              { id: "exams", label: "Exams & Viva" },
-              { id: "hostel", label: "Hostel & Food" },
-            ].map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                className={`filter-tab-bw ${activeFilter === filter.id ? "filter-tab-bw-active" : ""}`}
-                onClick={() => setActiveFilter(filter.id)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+        {/* Filter Tabs (Clay Pills) */}
+        <div className="flex items-center justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {filterTabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setFilter(tab.id)}
+              className={`px-4 py-2 rounded-full text-xs font-heading font-bold transition-all shrink-0 ${
+                filter === tab.id
+                  ? "clay-button-primary text-white"
+                  : "clay-button-secondary text-muted-foreground"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Feed Cards Column */}
-        <div className="feed-cards-list">
-          {filteredPosts.map((post) => {
-            const isCommentsOpen = !!expandedComments[post.id];
+        {/* Claymorphic Posts Feed */}
+        <div className="space-y-4">
+          {filteredPosts.map((post) => (
+            <article key={post.id} className="clay-card p-5 sm:p-6 transition-all duration-300">
+              {/* Post Header */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="clay-avatar w-11 h-11 text-2xl shrink-0">
+                    <span>{post.avatarIcon}</span>
+                  </div>
 
-            return (
-              <article key={post.id} className="yak-card-bw">
-                {/* Left Karma Vote Column */}
-                <div className="yak-vote-column">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-heading font-bold text-sm text-foreground">
+                        {post.authorLabel}
+                      </span>
+                      <span className="clay-badge text-[10px] font-heading font-bold text-primary uppercase">
+                        {post.category}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-heading mt-0.5">
+                      <span dangerouslySetInnerHTML={{ __html: post.location }} />
+                      <span>&bull;</span>
+                      <span>{post.timeAgo}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hidden sm:inline-flex items-center gap-1 text-[11px] font-heading font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>5mi Radar</span>
+                </div>
+              </div>
+
+              {/* Post Content */}
+              <p className="mt-3.5 text-base sm:text-[17px] text-foreground/90 leading-relaxed font-body">
+                {post.content}
+              </p>
+
+              {/* Engagement Bar with Clay Vote Pill */}
+              <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between">
+                {/* 3D Clay Vote Container */}
+                <div className="clay-vote-container">
                   <button
                     type="button"
-                    className={`yak-vote-btn-bw upvote ${post.userVote === "up" ? "voted" : ""}`}
                     onClick={() => handleVote(post.id, "up")}
-                    aria-label="Upvote post"
+                    className={`clay-vote-btn ${post.userVote === "up" ? "active-up" : ""}`}
+                    aria-label="Upvote"
                   >
-                    ▲
+                    <ArrowBigUp className={`w-5 h-5 ${post.userVote === "up" ? "fill-current" : ""}`} />
                   </button>
 
-                  <span className="yak-karma-count-bw">
+                  <span
+                    className={`px-2 text-xs font-heading font-black min-w-[28px] text-center ${
+                      post.userVote === "up"
+                        ? "text-primary"
+                        : post.userVote === "down"
+                        ? "text-destructive"
+                        : "text-foreground"
+                    }`}
+                  >
                     {post.upvotes}
                   </span>
 
                   <button
                     type="button"
-                    className={`yak-vote-btn-bw downvote ${post.userVote === "down" ? "voted" : ""}`}
                     onClick={() => handleVote(post.id, "down")}
-                    aria-label="Downvote post"
+                    className={`clay-vote-btn ${post.userVote === "down" ? "active-down" : ""}`}
+                    aria-label="Downvote"
                   >
-                    ▼
+                    <ArrowBigDown className={`w-5 h-5 ${post.userVote === "down" ? "fill-current" : ""}`} />
                   </button>
                 </div>
 
-                {/* Right Post Body */}
-                <div className="yak-content-column">
-                  {/* Post Metadata Header */}
-                  <div className="yak-meta-header">
-                    <div className="yak-author-info">
-                      <div className="yak-avatar-bw">
-                        {post.avatarIcon}
-                      </div>
-                      <div className="yak-author-text">
-                        <span className="yak-author-handle">{post.authorLabel}</span>
-                        <div className="yak-submeta">
-                          <span className="yak-location">{post.location}</span>
-                          <span className="yak-dot">•</span>
-                          <span className="yak-time">{post.timeAgo}</span>
-                        </div>
-                      </div>
-                    </div>
+                {/* Comments Toggle Button */}
+                <button
+                  type="button"
+                  onClick={() => toggleComments(post.id)}
+                  className="clay-badge text-muted-foreground hover:text-foreground text-xs font-heading font-semibold py-1.5 px-3 cursor-pointer transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4 text-muted-foreground" />
+                  <span>{post.commentsCount} comments</span>
+                </button>
+              </div>
 
-                    <span className="category-tag-bw">
-                      #{post.category}
-                    </span>
-                  </div>
-
-                  {/* Post Text */}
-                  <div className="yak-text">
-                    {post.content}
-                  </div>
-
-                  {/* Post Footer Action Bar */}
-                  <div className="yak-card-footer">
-                    <button
-                      type="button"
-                      className={`yak-action-btn-bw ${isCommentsOpen ? "active" : ""}`}
-                      onClick={() => toggleComments(post.id)}
-                    >
-                      <span>💬 {post.commentsCount} comments</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className="yak-action-btn-bw"
-                      onClick={() => handleShare(post.id)}
-                      title="Copy link"
-                    >
-                      <span>{copiedPostId === post.id ? "Copied! ✓" : "🔗 Share"}</span>
-                    </button>
-
-                    <div className="yak-safe-pill-bw">
-                      <span>Anonymous</span>
-                    </div>
-                  </div>
-
-                  {/* Expandable Comments Drawer */}
-                  {isCommentsOpen && (
-                    <div className="yak-comments-section">
-                      <div className="comments-divider"></div>
-                      
-                      <div className="comments-list">
-                        {post.comments.map((comment) => (
-                          <div key={comment.id} className="yak-comment-item">
-                            <div className="comment-avatar-bw">{comment.avatarIcon}</div>
-                            <div className="comment-bubble-bw">
-                              <p className="comment-text">{comment.text}</p>
-                              <div className="comment-meta">
-                                <span>{comment.timeAgo}</span>
-                                <span>•</span>
-                                <span>+{comment.upvotes}</span>
-                              </div>
-                            </div>
+              {/* Expanded Comments List (if toggled) */}
+              {expandedComments[post.id] && (
+                <div className="mt-4 pt-3 border-t border-border/40 space-y-3 animate-in fade-in">
+                  {post.comments.length > 0 ? (
+                    <div className="space-y-2">
+                      {post.comments.map((c) => (
+                        <div key={c.id} className="p-3 rounded-2xl bg-muted/40 border border-border/40 flex items-start gap-2.5">
+                          <span className="text-lg">{c.avatarIcon}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs sm:text-sm text-foreground font-body">{c.text}</p>
+                            <span className="text-[10px] text-muted-foreground font-heading mt-0.5 block">{c.timeAgo}</span>
                           </div>
-                        ))}
-                      </div>
-
-                      {/* Add comment composer */}
-                      <div className="comment-input-row">
-                        <input
-                          type="text"
-                          className="comment-input"
-                          placeholder="Drop an anonymous reply (account needed to speak)..."
-                          value={replyInputs[post.id] || ""}
-                          onChange={(e) =>
-                            setReplyInputs((prev) => ({
-                              ...prev,
-                              [post.id]: e.target.value,
-                            }))
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleAddReply(post.id);
-                            }
-                          }}
-                        />
-                        <button
-                          type="button"
-                          className="comment-send-btn-bw"
-                          onClick={() => handleAddReply(post.id)}
-                        >
-                          Reply
-                        </button>
-                      </div>
+                        </div>
+                      ))}
                     </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground font-heading italic">
+                      No comments yet. Be the first to drop a reply!
+                    </p>
                   )}
+
+                  {/* Comment Input Box */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="text"
+                      placeholder="Reply anonymously..."
+                      value={commentDrafts[post.id] || ""}
+                      onChange={(e) =>
+                        setCommentDrafts({ ...commentDrafts, [post.id]: e.target.value })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleAddComment(post.id);
+                      }}
+                      className="flex-1 h-9 px-3 rounded-full text-xs bg-muted/50 border border-border/70 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddComment(post.id)}
+                      className="clay-button-primary h-9 px-3 rounded-full text-xs font-bold"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-              </article>
-            );
-          })}
+              )}
+            </article>
+          ))}
+        </div>
+
+        {/* View Full Feed Callout Banner */}
+        <div className="text-center pt-4">
+          <Link
+            href="/feed"
+            className="clay-button-primary px-8 py-3.5 text-sm font-heading font-black rounded-full shadow-lg"
+          >
+            <span>Open Live Campus Feed</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

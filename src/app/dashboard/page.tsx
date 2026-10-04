@@ -1,11 +1,7 @@
-import { Metadata } from "next";
-import LoggedInAppView from "@/components/LoggedInAppView";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Campus Feed — nimo",
-  description: "Live student chatter and anonymous confession feed.",
-};
+import FeedPage from "@/app/feed/page";
 
 export default function DashboardPage() {
-  return <LoggedInAppView />;
+  return <FeedPage />;
 }

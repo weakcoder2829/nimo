@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Download, QrCode, Smartphone, Sparkles, Check, CheckCircle2, ShieldCheck } from "lucide-react";
 
 export default function AppDownloadCleanSection() {
   const [showQrModal, setShowQrModal] = useState(false);
@@ -13,164 +14,171 @@ export default function AppDownloadCleanSection() {
   };
 
   return (
-    <section id="download-app" className="download-clean-section">
-      <div className="section-container">
-        <div className="download-clean-grid">
-          {/* Left Column: Direct Download Options (No Google Play) */}
-          <div className="download-clean-content">
-            <div className="section-badge-bw">MOBILE INSTALL</div>
-            <h2 className="download-clean-title">
-              Take your campus pulse everywhere you walk.
-            </h2>
-            <p className="download-clean-desc">
-              Get instant notifications when a confession trends at your college, vote on live lecture banter, and drop whispers from anywhere in Faridabad.
-            </p>
-
-            {downloadSuccess && (
-              <div className="download-alert-bw">
-                ✓ Starting direct APK download (nimo-faridabad-v1.0.apk)
+    <section id="download-app" className="w-full py-16 sm:py-24 px-4 sm:px-6 relative">
+      <div className="max-w-6xl mx-auto">
+        <div className="clay-card p-8 sm:p-12 relative overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-heading font-bold bg-primary/10 text-primary border border-primary/20">
+                <Smartphone className="w-3.5 h-3.5 text-primary" />
+                <span>MOBILE APP INSTALL</span>
               </div>
-            )}
 
-            {/* Direct Black & White Download Actions - NOT Google Play */}
-            <div className="direct-download-buttons">
-              <button
-                type="button"
-                className="btn-download-direct primary"
-                onClick={handleDownloadApk}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-                <div className="btn-download-text">
-                  <span className="btn-small-label">DIRECT INSTALL</span>
-                  <span className="btn-bold-label">Download Android .APK</span>
-                </div>
-              </button>
+              <h2 className="font-heading font-black text-3xl sm:text-4xl text-foreground tracking-tight leading-tight">
+                Take your campus pulse everywhere you walk.
+              </h2>
 
-              <button
-                type="button"
-                className="btn-download-direct secondary"
-                onClick={() => setShowQrModal(true)}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="3" width="7" height="7"></rect>
-                  <rect x="14" y="14" width="7" height="7"></rect>
-                  <rect x="3" y="14" width="7" height="7"></rect>
-                </svg>
-                <div className="btn-download-text">
-                  <span className="btn-small-label">IOS & ANDROID</span>
-                  <span className="btn-bold-label">Scan QR Code</span>
+              <p className="font-body text-base text-muted-foreground leading-relaxed">
+                Get instant notifications when a confession trends at your college, vote on live lecture banter, and drop whispers from anywhere in Faridabad.
+              </p>
+
+              {downloadSuccess && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-heading font-bold flex items-center gap-2 animate-in fade-in">
+                  <Check className="w-4 h-4" />
+                  <span>Starting direct APK download (nimo-faridabad-v1.0.apk)</span>
                 </div>
-              </button>
+              )}
+
+              {/* Download Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <button
+                  type="button"
+                  className="clay-button-primary px-6 py-3.5 rounded-2xl flex items-center gap-3 text-left"
+                  onClick={handleDownloadApk}
+                >
+                  <Download className="w-5 h-5 shrink-0" />
+                  <div>
+                    <span className="text-[10px] font-heading font-bold block opacity-80 uppercase tracking-wider">
+                      DIRECT INSTALL
+                    </span>
+                    <span className="text-sm font-heading font-black block">
+                      Download Android .APK
+                    </span>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  className="clay-button-secondary px-5 py-3.5 rounded-2xl flex items-center gap-3 text-left"
+                  onClick={() => setShowQrModal(true)}
+                >
+                  <QrCode className="w-5 h-5 shrink-0 text-muted-foreground" />
+                  <div>
+                    <span className="text-[10px] font-heading font-bold block text-muted-foreground uppercase tracking-wider">
+                      SCAN QR CODE
+                    </span>
+                    <span className="text-sm font-heading font-bold block text-foreground">
+                      Install on Phone
+                    </span>
+                  </div>
+                </button>
+              </div>
+
+              {/* App Perks */}
+              <div className="flex flex-wrap items-center gap-4 text-xs font-heading text-muted-foreground pt-2">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Lightweight (8.4 MB)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>No Play Store Account Needed</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Full Anonymity Shield</span>
+                </div>
+              </div>
             </div>
 
-            <div className="pwa-install-note">
-              <span>📱 iOS users can also tap <strong>Share → Add to Home Screen</strong> in Safari for instantaneous zero-install access.</span>
-            </div>
-          </div>
+            {/* Right Graphic Preview (Clay Mockup Phone) */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="clay-card p-4 w-64 sm:w-72 bg-card border-2 border-border/80 shadow-2xl space-y-4">
+                {/* Mock Phone Notch */}
+                <div className="w-20 h-4 bg-muted rounded-full mx-auto" />
 
-          {/* Right Column: Monochrome Wireframe Phone */}
-          <div className="download-mockup-col">
-            <div className="phone-monochrome-frame">
-              <div className="phone-mono-notch"></div>
-              <div className="phone-mono-screen">
-                <div className="phone-mono-header">
-                  <span className="phone-mono-brand">nimo</span>
-                  <span className="phone-mono-badge">Faridabad</span>
-                </div>
-                <div className="phone-mono-body">
-                  <div className="phone-mono-card">
-                    <span className="pm-tag">JC Bose UST • 4m ago</span>
-                    <p className="pm-text">
-                      "Sector 15 parantha point is officially our exam survival headquarters."
-                    </p>
-                    <div className="pm-stats">▲ 52 ▼ • 8 replies</div>
+                {/* Mock Screen Content */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs font-heading">
+                    <span className="font-bold text-primary">nimo mobile</span>
+                    <span className="text-[10px] text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                      Live
+                    </span>
                   </div>
 
-                  <div className="phone-mono-card highlight">
-                    <span className="pm-tag">Manav Rachna • 16m ago</span>
-                    <p className="pm-text">
-                      "Attendance shortage notice issued. May the force be with us all."
+                  <div className="p-3 rounded-2xl bg-muted/40 border border-border/40 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🦊</span>
+                      <span className="text-xs font-heading font-bold">Anonymous YMCAian</span>
+                    </div>
+                    <p className="text-[11px] font-body text-muted-foreground leading-snug">
+                      Hostel 2 midnight chai is brewing. Come to room 204.
                     </p>
-                    <div className="pm-stats">▲ 89 ▼ • 14 replies</div>
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
+                      <span>42 upvotes</span>
+                      <span>5m ago</span>
+                    </div>
                   </div>
 
-                  <div className="phone-mono-card">
-                    <span className="pm-tag">Lingaya's • 35m ago</span>
-                    <p className="pm-text">
-                      "CS Lab external asks questions like we built the Linux kernel."
+                  <div className="p-3 rounded-2xl bg-muted/40 border border-border/40 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🦉</span>
+                      <span className="text-xs font-heading font-bold">Aggarwal Student</span>
+                    </div>
+                    <p className="text-[11px] font-body text-muted-foreground leading-snug">
+                      Internal assessment dates pushed by a week! Let's go 🎉
                     </p>
-                    <div className="pm-stats">▲ 64 ▼ • 11 replies</div>
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1">
+                      <span>96 upvotes</span>
+                      <span>12m ago</span>
+                    </div>
                   </div>
                 </div>
-                <div className="phone-mono-footer">
-                  <span>Feed</span>
-                  <span className="mono-add-btn">+</span>
-                  <span>Confess</span>
-                </div>
+
+                <div className="w-28 h-1 bg-muted-foreground/30 rounded-full mx-auto" />
               </div>
             </div>
           </div>
         </div>
+
+        {/* QR Code Modal (Glassmorphic) */}
+        {showQrModal && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="clay-card p-6 sm:p-8 max-w-sm w-full text-center space-y-4 animate-in zoom-in-95">
+              <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                <span className="font-heading font-bold text-base text-foreground">
+                  Scan to Install APK
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowQrModal(false)}
+                  className="text-muted-foreground hover:text-foreground text-sm font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Minimal SVG QR Code placeholder representation */}
+              <div className="p-4 rounded-2xl bg-white flex items-center justify-center border border-border shadow-inner mx-auto w-48 h-48">
+                <QrCode className="w-36 h-36 text-zinc-900" />
+              </div>
+
+              <p className="text-xs text-muted-foreground font-body">
+                Point your phone camera to download directly on your Android device.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setShowQrModal(false)}
+                className="clay-button-secondary w-full py-2.5 text-xs font-heading font-bold rounded-xl"
+              >
+                Close Window
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* QR Modal */}
-      {showQrModal && (
-        <div className="nimo-modal-backdrop" onClick={() => setShowQrModal(false)}>
-          <div className="qr-modal-bw" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              className="modal-close-bw"
-              onClick={() => setShowQrModal(false)}
-            >
-              ✕
-            </button>
-            <div className="section-badge-bw">DIRECT PHONE INSTALL</div>
-            <h3 className="qr-title-bw">Scan to Install Nimo</h3>
-            <p className="qr-subtitle-bw">Point your smartphone camera at this code to open and install Nimo immediately.</p>
-
-            <div className="qr-box-bw">
-              <svg className="qr-svg" viewBox="0 0 100 100" fill="none">
-                <rect x="5" y="5" width="30" height="30" rx="3" fill="#000000" />
-                <rect x="11" y="11" width="18" height="18" fill="#ffffff" />
-                <rect x="15" y="15" width="10" height="10" fill="#000000" />
-
-                <rect x="65" y="5" width="30" height="30" rx="3" fill="#000000" />
-                <rect x="71" y="11" width="18" height="18" fill="#ffffff" />
-                <rect x="75" y="15" width="10" height="10" fill="#000000" />
-
-                <rect x="5" y="65" width="30" height="30" rx="3" fill="#000000" />
-                <rect x="11" y="71" width="18" height="18" fill="#ffffff" />
-                <rect x="15" y="75" width="10" height="10" fill="#000000" />
-
-                <rect x="42" y="10" width="6" height="6" fill="#000000" />
-                <rect x="52" y="18" width="6" height="6" fill="#000000" />
-                <rect x="42" y="26" width="6" height="6" fill="#000000" />
-                <rect x="10" y="45" width="6" height="6" fill="#000000" />
-                <rect x="22" y="48" width="6" height="6" fill="#000000" />
-                <rect x="35" y="42" width="6" height="6" fill="#000000" />
-                <rect x="48" y="45" width="12" height="12" fill="#000000" />
-                <rect x="68" y="45" width="6" height="6" fill="#000000" />
-                <rect x="80" y="45" width="10" height="6" fill="#000000" />
-                <rect x="42" y="65" width="6" height="6" fill="#000000" />
-                <rect x="55" y="72" width="6" height="6" fill="#000000" />
-                <rect x="45" y="85" width="8" height="8" fill="#000000" />
-                <rect x="65" y="65" width="12" height="6" fill="#000000" />
-                <rect x="82" y="75" width="8" height="8" fill="#000000" />
-                <rect x="70" y="86" width="15" height="6" fill="#000000" />
-              </svg>
-            </div>
-
-            <div className="qr-note-bw">
-              No store account needed • Direct progressive web application
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
