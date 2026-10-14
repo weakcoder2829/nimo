@@ -87,12 +87,8 @@ export default function FeedPage() {
           {/* Quick Post Prompt Card (Tactile Clay Card) */}
           <Link href="/post" className="block group">
             <div className="clay-card p-4 transition-all flex items-center gap-3.5">
-              <div className="ig-story-ring p-0.5 shrink-0">
-                <div className="ig-story-avatar-inner">
-                  <div className="clay-avatar w-10 h-10 text-xl group-hover:scale-105 transition-transform">
-                    🦬
-                  </div>
-                </div>
+              <div className="clay-avatar w-10 h-10 text-xl group-hover:scale-105 transition-transform shrink-0">
+                🦬
               </div>
               <div className="flex-1 text-xs sm:text-sm font-heading text-muted-foreground">
                 What's happening on campus? Drop a yak...
@@ -115,7 +111,7 @@ export default function FeedPage() {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: "Today" Trending & Campus Radar (Desktop) */}
+        {/* RIGHT COLUMN: "Today" Trending & Campus Community (Desktop) */}
         <aside className="hidden lg:block w-80 space-y-4 shrink-0">
           {/* Trending Box (Clay Card) */}
           <div className="clay-card p-5 space-y-4">
@@ -166,7 +162,7 @@ export default function FeedPage() {
               </div>
             </div>
             <p className="text-xs font-body text-muted-foreground leading-relaxed">
-              Your radar is locked to Aggarwal College. 1,420 students active in the last 24 hours.
+              Connected to Aggarwal College. 1,420 students active today.
             </p>
             <Link href="/college" className="block pt-1">
               <button

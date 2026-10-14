@@ -4,24 +4,22 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import NimoSplash from "@/components/NimoSplash";
 import DesktopLandingPage from "@/components/DesktopLandingPage";
-import NimoAuth from "@/components/NimoAuth";
+import MobileLandingPage from "@/components/MobileLandingPage";
 import { useAuth } from "@/lib/authContext";
 
 /**
  * Root Application Entry:
- * 1. "nimo" comes first (minimalist entrance splash).
- * 2. After nimo:
- *    - PC (screen >= 768px): Shows the Desktop Landing Page with links to Sign Up, Sign In, and Feed.
- *    - Mobile (screen < 768px): NO landing page! Direct to Sign In / Sign Up (or Feed if already authenticated).
- * 3. Responsive, minimal, and state-of-the-art aesthetics.
+ * 1. "timo" splash appears for exactly 1 second (1000ms).
+ * 2. Two distinct landing pages:
+ *    - Mobile (< 768px): Dedicated 1-page mobile landing page with "Speak freely", "How it works", and "Create account".
+ *    - PC (>= 768px): Comprehensive desktop landing page.
  */
 export default function RootPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [splashFinished, setSplashFinished] = useState(false);
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
 
-  // Detect screen size on client mount and resize
   useEffect(() => {
     const checkViewport = () => {
       setIsDesktop(window.innerWidth >= 768);
@@ -32,45 +30,22 @@ export default function RootPage() {
     return () => window.removeEventListener("resize", checkViewport);
   }, []);
 
-  // When splash finishes, if user is already authenticated on mobile, send straight to /feed
-  useEffect(() => {
-    if (splashFinished && isDesktop === false && isAuthenticated && user) {
-      router.replace("/feed");
-    }
-  }, [splashFinished, isDesktop, isAuthenticated, user, router]);
-
   return (
     <main className="w-full min-h-screen bg-background text-foreground relative">
-      {/* ========================================================================= */}
-      {/* 1. NIMO COMES FIRST: Ultra-clean minimal entrance                         */}
-      {/* ========================================================================= */}
+      {/* 1. TIMO 1-SECOND SPLASH INTRO */}
       <NimoSplash
-        durationMs={1800}
+        durationMs={1000}
         onFinish={() => setSplashFinished(true)}
       />
 
-      {/* ========================================================================= */}
-      {/* 2. PC EXPERIENCE (Screen >= 768px): Desktop Landing Page ONLY             */}
-      {/* ========================================================================= */}
+      {/* 2. PC EXPERIENCE (Screen >= 768px): Desktop Landing Page */}
       <div className="hidden md:block w-full min-h-screen">
         <DesktopLandingPage />
       </div>
 
-      {/* ========================================================================= */}
-      {/* 3. MOBILE EXPERIENCE (Screen < 768px): NO LANDING PAGE!                   */}
-      {/* Direct to Sign Up / Sign In Auth (or Campus Feed if authenticated)        */}
-      {/* ========================================================================= */}
+      {/* 3. MOBILE EXPERIENCE (Screen < 768px): Dedicated 1-Page Mobile Landing Page */}
       <div className="block md:hidden w-full min-h-screen">
-        {!isAuthenticated || !user ? (
-          <NimoAuth initialMode="signin" />
-        ) : (
-          <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center space-y-4">
-            <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-            <p className="text-xs text-muted-foreground font-sans tracking-wide">
-              Entering campus feed...
-            </p>
-          </div>
-        )}
+        <MobileLandingPage />
       </div>
     </main>
   );

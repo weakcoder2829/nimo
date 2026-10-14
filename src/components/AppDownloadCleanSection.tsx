@@ -36,7 +36,7 @@ export default function AppDownloadCleanSection() {
               {downloadSuccess && (
                 <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-heading font-bold flex items-center gap-2 animate-in fade-in">
                   <Check className="w-4 h-4" />
-                  <span>Starting direct APK download (nimo-faridabad-v1.0.apk)</span>
+                  <span>Starting direct APK download (taga-faridabad-v1.0.apk)</span>
                 </div>
               )}
 
@@ -101,7 +101,7 @@ export default function AppDownloadCleanSection() {
                 {/* Mock Screen Content */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-xs font-heading">
-                    <span className="font-bold text-primary">nimo mobile</span>
+                    <span className="font-bold text-primary">Taga mobile</span>
                     <span className="text-[10px] text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full">
                       Live
                     </span>

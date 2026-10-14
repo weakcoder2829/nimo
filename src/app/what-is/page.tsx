@@ -41,11 +41,8 @@ export default function WhatIsPage() {
       {/* Top Bar: Glassmorphic Nav */}
       <header className="w-full max-w-2xl flex items-center justify-between pb-6 border-b border-border/80 relative z-10">
         <Link href="/feed" className="flex items-center gap-1.5 select-none">
-          <span className="font-heading font-black text-2xl tracking-tight text-primary">
-            nimo<span className="text-foreground">.</span>
-          </span>
-          <span className="clay-badge text-[10px] text-primary uppercase">
-            college radar
+          <span className="font-heading font-black text-2xl tracking-tight text-primary lowercase">
+            timo<span className="text-foreground">.</span>
           </span>
         </Link>
 
@@ -66,7 +63,7 @@ export default function WhatIsPage() {
         <div className="space-y-4 text-center sm:text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-heading font-bold bg-primary/10 text-primary border border-primary/20">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>About Nimo Campus Platform</span>
+            <span>About timo</span>
           </div>
 
           <h1 className="font-heading font-black text-3xl sm:text-4xl text-foreground tracking-tight">
@@ -74,7 +71,7 @@ export default function WhatIsPage() {
           </h1>
 
           <p className="font-body text-base text-muted-foreground leading-relaxed">
-            Nimo connects university students within a 5-mile geographic radar.
+            timo connects university students across your campus.
             Post anonymously, discover real-time happenings, vote on community topics,
             and connect with verified classmates without personal profiling.
           </p>

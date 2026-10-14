@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LandingNavbar from "@/components/LandingNavbar";
-import CampusFeedPreview from "@/components/CampusFeedPreview";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import ConfessionComposer from "@/components/ConfessionComposer";
 import AppDownloadCleanSection from "@/components/AppDownloadCleanSection";
@@ -95,7 +94,7 @@ export default function DesktopLandingPage({ onOpenAuth }: DesktopLandingPagePro
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-heading font-medium bg-primary/10 text-primary border border-primary/20 shadow-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <MapPin className="w-3.5 h-3.5" />
-            <span>Faridabad Campus Radar Active &bull; 5-Mile Range</span>
+            <span>Faridabad Campus Network Active</span>
           </div>
 
           {/* Minimal Brand Mark */}
@@ -103,8 +102,8 @@ export default function DesktopLandingPage({ onOpenAuth }: DesktopLandingPagePro
             <span className="text-xs font-heading font-bold uppercase tracking-widest text-muted-foreground">
               Welcome to
             </span>
-            <span className="text-sm font-heading font-black tracking-tight text-primary px-2.5 py-0.5 rounded-lg bg-primary/10 border border-primary/20">
-              nimo.
+            <span className="text-sm font-heading font-black tracking-tight text-primary px-2.5 py-0.5 rounded-lg bg-primary/10 border border-primary/20 lowercase">
+              timo.
             </span>
           </div>
 
@@ -156,9 +155,9 @@ export default function DesktopLandingPage({ onOpenAuth }: DesktopLandingPagePro
             <button
               type="button"
               className="clay-button-secondary px-5 py-3.5 text-sm font-heading font-bold rounded-full gap-1.5"
-              onClick={() => scrollToSection("live-feed")}
+              onClick={() => scrollToSection("how-it-works")}
             >
-              <span>Explore Live Yaks</span>
+              <span>How It Works</span>
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
             </button>
 
@@ -192,12 +191,6 @@ export default function DesktopLandingPage({ onOpenAuth }: DesktopLandingPagePro
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* 3. LIVE CAMPUS FEED (Claymorphic)                                         */}
-      {/* ========================================================================= */}
-      <div id="live-feed">
-        <CampusFeedPreview />
-      </div>
 
       {/* ========================================================================= */}
       {/* 4. HOW IT WORKS SECTION                                                  */}
@@ -213,7 +206,7 @@ export default function DesktopLandingPage({ onOpenAuth }: DesktopLandingPagePro
         <ConfessionComposer
           isLoggedIn={isAuthenticated}
           onPostCreated={() => {
-            scrollToSection("live-feed");
+            router.push("/feed");
           }}
         />
       </div>

@@ -43,27 +43,20 @@ export default function LandingNavbar({
         {/* Brand Group */}
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-1.5 group select-none">
-            <span className="font-heading font-black text-2xl sm:text-3xl tracking-tight text-primary transition-transform group-hover:scale-105">
-              nimo<span className="text-foreground">.</span>
+            <span className="font-heading font-black text-2xl sm:text-3xl tracking-tight text-primary transition-transform group-hover:scale-105 lowercase">
+              timo<span className="text-foreground">.</span>
             </span>
           </Link>
 
           <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-heading font-medium bg-primary/10 text-primary border border-primary/20">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             <MapPin className="w-3 h-3 text-primary" />
-            <span>Faridabad Radar</span>
+            <span>Faridabad Campus</span>
           </div>
         </div>
 
         {/* Center Navigation Links (Desktop) */}
         <nav className="hidden lg:flex items-center gap-1">
-          <button
-            type="button"
-            className="px-3.5 py-1.5 rounded-full text-xs font-heading font-semibold text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-            onClick={() => onScrollToSection("live-feed")}
-          >
-            Live Feed
-          </button>
           <button
             type="button"
             className="px-3.5 py-1.5 rounded-full text-xs font-heading font-semibold text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
@@ -134,17 +127,14 @@ export default function LandingNavbar({
       {mobileMenuOpen && (
         <div className="lg:hidden mt-2 p-4 rounded-2xl glass-card border border-border shadow-xl space-y-3 animate-in fade-in slide-in-from-top-3 duration-200">
           <div className="flex flex-col space-y-1">
-            <button
-              type="button"
+            <Link
+              href="/feed"
+              onClick={() => setMobileMenuOpen(false)}
               className="text-left px-3.5 py-2.5 rounded-xl text-sm font-heading font-medium hover:bg-primary/10 hover:text-primary transition-colors flex items-center justify-between"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onScrollToSection("live-feed");
-              }}
             >
-              <span>Live Campus Feed</span>
+              <span>Campus Feed</span>
               <Flame className="w-4 h-4 text-primary" />
-            </button>
+            </Link>
             <button
               type="button"
               className="text-left px-3.5 py-2.5 rounded-xl text-sm font-heading font-medium hover:bg-primary/10 hover:text-primary transition-colors flex items-center justify-between"

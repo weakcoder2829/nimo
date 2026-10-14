@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Post, PostComment } from "@/lib/mockData";
 import {
   ArrowBigUp,
@@ -66,25 +67,30 @@ export default function PostCard({ post, onUpvote }: PostCardProps) {
     }
   };
 
+  const profileUrl = `/profile?user=${encodeURIComponent(post.author)}`;
+
   return (
     <article className="clay-card p-5 sm:p-6 transition-all duration-300">
-      {/* 1. Header: Avatar with sleek story ring, Author persona, Department, College */}
+      {/* 1. Header: Clean DP / Avatar, Author persona, Department, College */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          {/* Subtle gradient story ring around tactile clay avatar */}
-          <div className="ig-story-ring p-0.5">
-            <div className="ig-story-avatar-inner">
-              <div className="clay-avatar w-11 h-11 text-2xl shrink-0">
-                <span>{post.authorAvatar}</span>
-              </div>
-            </div>
-          </div>
+          {/* Clickable Clean DP without story ring */}
+          <Link
+            href={profileUrl}
+            className="clay-avatar w-11 h-11 text-2xl shrink-0 cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            title={`View ${post.author}'s profile`}
+          >
+            <span>{post.authorAvatar}</span>
+          </Link>
 
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-heading font-black text-sm text-foreground hover:text-primary transition-colors cursor-pointer">
+              <Link
+                href={profileUrl}
+                className="font-heading font-black text-sm text-foreground hover:text-primary transition-colors cursor-pointer"
+              >
                 {post.author}
-              </span>
+              </Link>
               {post.isHot && (
                 <span className="clay-badge clay-badge-hot">
                   <Flame className="w-3 h-3 fill-current" />
@@ -218,14 +224,21 @@ export default function PostCard({ post, onUpvote }: PostCardProps) {
             <div className="space-y-2 pt-1">
               {comments.map((c) => (
                 <div key={c.id} className="p-3 rounded-2xl bg-muted/30 border border-border/30 flex items-start gap-2.5">
-                  <div className="clay-avatar w-7 h-7 text-xs shrink-0 mt-0.5">
+                  <Link
+                    href={`/profile?user=${encodeURIComponent(c.author)}`}
+                    className="clay-avatar w-7 h-7 text-xs shrink-0 mt-0.5 hover:scale-110 active:scale-95 transition-transform"
+                    title={`View ${c.author}'s profile`}
+                  >
                     {c.avatar}
-                  </div>
+                  </Link>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-heading font-bold text-xs text-foreground">
+                      <Link
+                        href={`/profile?user=${encodeURIComponent(c.author)}`}
+                        className="font-heading font-bold text-xs text-foreground hover:text-primary transition-colors cursor-pointer"
+                      >
                         {c.author}
-                      </span>
+                      </Link>
                       <span className="text-[10px] text-muted-foreground font-heading">
                         {c.timeAgo}
                       </span>

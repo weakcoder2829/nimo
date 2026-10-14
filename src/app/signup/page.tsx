@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import NimoAuth from "@/components/NimoAuth";
 
 export const metadata: Metadata = {
-  title: "Sign Up — nimo",
-  description: "Create an anonymous student account for Faridabad colleges on nimo.",
+  title: "Sign Up — timo",
+  description: "Create an anonymous student account for Faridabad colleges on timo.",
 };
 
 export default function SignUpPage() {

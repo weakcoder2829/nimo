@@ -45,7 +45,7 @@ export default function AntiBullyingSection() {
           </h2>
 
           <p className="font-body text-base text-muted-foreground max-w-xl mx-auto">
-            Anonymity is a shield for honesty, never a weapon for harassment. Here is how Nimo maintains a respectful college community.
+            Anonymity is a shield for honesty, never a weapon for harassment. Here is how Taga maintains a respectful college community.
           </p>
         </div>
 

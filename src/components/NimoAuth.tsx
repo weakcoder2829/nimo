@@ -371,7 +371,7 @@ export default function NimoAuth({
           <div className={styles.brandLogoIcon}>
             <div className={styles.brandLogoDot} />
           </div>
-          <span className={styles.brandLogoText}>nimo</span>
+          <span className={styles.brandLogoText}>timo</span>
         </div>
 
         {/* Right: Contact Support */}
@@ -409,7 +409,7 @@ export default function NimoAuth({
           {mode === "signin" && (
             <div>
               <div className={styles.cardHeader}>
-                <h1 className={styles.titlePrimary}>Log in to nimo</h1>
+                <h1 className={styles.titlePrimary}>Log in to timo</h1>
                 <p className={styles.subtitleMuted}>Your academic journey starts here</p>
               </div>
 
@@ -526,7 +526,7 @@ export default function NimoAuth({
           {mode === "signup" && step < 4 && (
             <div>
               <div className={styles.cardHeader}>
-                <h1 className={styles.titlePrimary}>Join nimo</h1>
+                <h1 className={styles.titlePrimary}>Join timo</h1>
 
                 {/* 3 Step Progress Indicator */}
                 <div className={styles.progressIndicator}>
@@ -934,7 +934,7 @@ export default function NimoAuth({
                   Verification Complete!
                 </h2>
                 <p className={styles.subtitleMuted}>
-                  Welcome to <strong>{collegeName}</strong> on Nimo. Your student identity has been cryptographically confirmed.
+                  Welcome to <strong>{collegeName}</strong> on timo. Your student identity has been cryptographically confirmed.
                 </p>
               </div>
 
@@ -990,7 +990,7 @@ export default function NimoAuth({
               <X className="w-4 h-4" />
             </button>
 
-            <h3 className={styles.modalTitle}>Nimo Student Support</h3>
+            <h3 className={styles.modalTitle}>timo Student Support</h3>
             <p className={styles.modalDesc}>
               Need assistance with your student ID verification or mobile login? Our campus desk is online.
             </p>
@@ -999,7 +999,7 @@ export default function NimoAuth({
               <Mail className={styles.supportIcon} />
               <div>
                 <strong className="text-sm block text-white">Student Desk Email</strong>
-                <span className="text-xs text-slate-400">verification@nimo.campus (Replies in 15 mins)</span>
+                <span className="text-xs text-slate-400">support@timo.campus (Replies in 15 mins)</span>
               </div>
             </div>
 

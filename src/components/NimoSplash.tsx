@@ -112,7 +112,7 @@ export default function NimoSplash({
               textShadow: "0 0 40px rgba(56, 189, 248, 0.25)",
             }}
           >
-            nimo
+            timo
           </span>
           <span
             style={{
@@ -160,7 +160,7 @@ export default function NimoSplash({
               textTransform: "lowercase",
             }}
           >
-            campus social pulse &bull; 5-mile radar
+            campus social pulse &bull; student network
           </span>
         </div>
 

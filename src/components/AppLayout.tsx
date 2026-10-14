@@ -16,6 +16,7 @@ import {
   MapPin,
   ShieldCheck,
   Plus,
+  User,
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -36,13 +37,13 @@ export default function AppLayout({
     setMounted(true);
   }, []);
 
-  // The 5 original core navigation tabs
+  // Core navigation tabs
   const navItems = [
     { label: "Feed", href: "/feed", icon: Flame, count: null },
     { label: "Trending", href: "/trending", icon: TrendingUp, count: "Hot" },
-    { label: "My College", href: "/college", icon: GraduationCap, count: "1.4k" },
+    { label: "College", href: "/college", icon: GraduationCap, count: null },
     { label: "Messages", href: "/messages", icon: MessageSquare, count: "2" },
-    { label: "Search", href: "/search", icon: Search, count: null },
+    { label: "Profile", href: "/profile", icon: User, count: null },
   ];
 
   if (!mounted || isLoading) {
@@ -50,7 +51,7 @@ export default function AppLayout({
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
         <div className="w-10 h-10 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
         <span className="text-xs font-heading font-medium text-muted-foreground mt-3">
-          Loading nimo...
+          Loading timo...
         </span>
       </div>
     );
@@ -77,8 +78,8 @@ export default function AppLayout({
       <header className="md:hidden sticky top-0 z-40 px-3 py-2.5 glass-nav-header flex items-center justify-between border-b border-border/80">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-1.5 select-none">
-            <span className="font-heading font-black text-2xl tracking-tight text-primary">
-              nimo<span className="text-foreground">.</span>
+            <span className="font-heading font-black text-2xl tracking-tight text-primary lowercase">
+              timo<span className="text-foreground">.</span>
             </span>
           </Link>
           <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-heading font-medium bg-primary/10 text-primary border border-primary/20 max-w-[140px] truncate">
@@ -88,9 +89,13 @@ export default function AppLayout({
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="px-2.5 py-1 rounded-full text-[11px] font-heading font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <Link
+            href="/profile"
+            className="px-2.5 py-1 rounded-full text-[11px] font-heading font-bold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+            title="View Profile"
+          >
             {user.studentName.split(" ")[0]}
-          </div>
+          </Link>
           <button
             type="button"
             onClick={logout}
@@ -107,41 +112,41 @@ export default function AppLayout({
       {/* ========================================================================= */}
       <aside className="hidden md:flex flex-col w-64 lg:w-72 sticky top-0 h-screen glass-sidebar p-5 justify-between select-none shrink-0 z-30">
         <div className="space-y-6">
-          {/* Logo & Radar Indicator */}
-          <div className="space-y-2">
+          {/* Logo */}
+          <div className="space-y-1">
             <Link href="/" className="flex items-center gap-2 group">
-              <span className="font-heading font-black text-3xl tracking-tight text-primary group-hover:scale-105 transition-transform">
-                nimo<span className="text-foreground">.</span>
-              </span>
-              <span className="clay-badge text-[10px] font-heading font-bold uppercase tracking-wider text-primary">
-                radar
+              <span className="font-heading font-black text-3xl tracking-tight text-primary group-hover:scale-105 transition-transform lowercase">
+                timo<span className="text-foreground">.</span>
               </span>
             </Link>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-heading">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Campus Radar (5mi active)</span>
+            <div className="text-xs text-muted-foreground font-heading">
+              <span>Campus student network</span>
             </div>
           </div>
 
-          {/* Student Profile Glass/Clay Card */}
-          <div className="p-3.5 rounded-2xl clay-card space-y-2">
+          {/* Student Profile Card (Clickable to open Profile page) */}
+          <Link
+            href="/profile"
+            className="block p-3.5 rounded-2xl clay-card space-y-2 group hover:scale-[1.02] active:scale-[0.99] transition-all cursor-pointer"
+            title="Open your profile"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-heading font-semibold text-muted-foreground">
-                Verified Student
+              <span className="text-[11px] font-heading font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                Verified Student &rarr;
               </span>
               <span className="text-[10px] font-heading font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                 Active
               </span>
             </div>
             <div className="font-heading font-bold text-sm text-foreground flex items-center gap-2">
-              <div className="clay-avatar w-6 h-6 text-xs">👨‍💻</div>
-              <span className="truncate">{user.studentName}</span>
+              <div className="clay-avatar w-7 h-7 text-xs shrink-0 group-hover:scale-105 transition-transform">👨‍💻</div>
+              <span className="truncate group-hover:text-primary transition-colors">{user.studentName}</span>
             </div>
             <div className="text-[11px] text-muted-foreground font-heading space-y-0.5">
               <div>ID: <strong className="text-foreground">{user.rollNumber}</strong></div>
               <div className="truncate">{effectiveCollege}</div>
             </div>
-          </div>
+          </Link>
 
           {/* The Original 5 Navigation Links */}
           <nav className="space-y-1.5">

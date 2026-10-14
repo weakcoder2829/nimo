@@ -18,24 +18,23 @@ export default function LandingFooter({
           {/* Brand & Mission */}
           <div className="space-y-2">
             <Link href="/" className="flex items-center gap-1.5">
-              <span className="font-heading font-black text-2xl tracking-tight text-primary">
-                nimo<span className="text-foreground">.</span>
+              <span className="font-heading font-black text-2xl tracking-tight text-primary lowercase">
+                timo<span className="text-foreground">.</span>
               </span>
             </Link>
             <p className="font-body text-xs sm:text-sm text-muted-foreground max-w-sm">
-              Anonymous community and confession radar for Faridabad college students.
+              Anonymous community and student network for Faridabad college students.
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-heading font-semibold text-muted-foreground">
-            <button
-              type="button"
+            <Link
+              href="/feed"
               className="hover:text-primary transition-colors cursor-pointer"
-              onClick={() => onScrollToSection("live-feed")}
             >
-              Live Feed
-            </button>
+              Campus Feed
+            </Link>
             <button
               type="button"
               className="hover:text-primary transition-colors cursor-pointer"
@@ -76,7 +75,7 @@ export default function LandingFooter({
         {/* Bottom copyright row */}
         <div className="pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-heading text-muted-foreground">
           <p>
-            &copy; {new Date().getFullYear()} nimo &bull; Faridabad Colleges Anonymous Network
+            &copy; {new Date().getFullYear()} timo &bull; Faridabad Colleges Anonymous Network
           </p>
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />

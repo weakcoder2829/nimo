@@ -19,8 +19,8 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "nimo. — The Anonymous Campus Social Pulse",
-  description: "Unfiltered campus banter, anonymous confessions, and local college radar within 5 miles.",
+  title: "timo — Anonymous Campus Student Network",
+  description: "Unfiltered campus banter, anonymous confessions, and local college community.",
 };
 
 // Immediate blocking script to prevent flash of wrong theme (FOUC)

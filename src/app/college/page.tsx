@@ -179,7 +179,7 @@ export default function CollegePage() {
             <div className="clay-card p-5 space-y-2 text-xs text-muted-foreground font-heading">
               <div className="font-bold text-foreground">About Aggarwal College Hub</div>
               <p className="font-body text-xs leading-relaxed">
-                Affiliated with MDU Rohtak, NAAC 'A' Accredited. Established in 1971. The nimo channel is managed autonomously by student representatives.
+                Affiliated with MDU Rohtak, NAAC 'A' Accredited. Established in 1971. The timo channel is managed autonomously by student representatives.
               </p>
             </div>
           </aside>
